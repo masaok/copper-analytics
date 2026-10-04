@@ -2,13 +2,12 @@ import {
   type EventBuffer,
   type Filter,
   type FlushUnit,
-  parsePayload,
+  handlePageview,
+  type ProjectDirectory,
   SHARD_COUNT,
   type Store,
   shardOf,
-  toHit,
 } from '@copper/core'
-import type { ProjectDirectory } from './projects'
 import { ROUTES } from './routes'
 
 export interface AppDeps {
@@ -25,13 +24,6 @@ export interface AppDeps {
   waitUntil?(work: Promise<unknown>): void
 }
 
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Max-Age': '86400',
-}
-const accepted = () => new Response(null, { status: 204, headers: CORS })
 const json = (body: unknown, status = 200) =>
   Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } })
 
@@ -47,37 +39,16 @@ export interface FlushReport {
 export function createApp(deps: AppDeps) {
   const now = () => (deps.clock ?? Date.now)()
 
-  async function ingest(request: Request): Promise<Response> {
-    let body: unknown
-    try {
-      body = JSON.parse(await request.text())
-    } catch {
-      return accepted()
-    }
-    const payload = parsePayload(body)
-    // Every rejection answers 204: a caller learns nothing about which site keys exist.
-    if (!payload) return accepted()
-    const project = await deps.projects.get(payload.s)
-    if (!project) return accepted()
-
-    const userAgent = request.headers.get('User-Agent') ?? ''
-    const ip = request.headers.get('CF-Connecting-IP') ?? ''
-    const reason = deps.filter.reject({
-      userAgent,
-      origin: request.headers.get('Origin') ?? payload.u,
-      ip,
-      referrer: payload.r ?? '',
-      project,
+  const ingest = (request: Request) =>
+    handlePageview(request, {
+      projects: deps.projects,
+      filter: deps.filter,
+      bufferFor: (siteKey) => deps.shard(shardOf(siteKey)),
+      ip: (req) => req.headers.get('CF-Connecting-IP') ?? '',
+      country: (req) => (req as { cf?: { country?: string } }).cf?.country ?? '',
+      clock: deps.clock,
+      waitUntil: deps.waitUntil,
     })
-    if (reason) return accepted()
-
-    const country = (request as { cf?: { country?: string } }).cf?.country ?? ''
-    const hit = toHit(payload, { userAgent, ip, country, now: now() })
-    const work = deps.shard(shardOf(hit.k)).add(hit, project.dailyCap)
-    if (deps.waitUntil) deps.waitUntil(work)
-    else await work
-    return accepted()
-  }
 
   /** Moves every finished hour from the shards into the database. The cron and POST /flush both call this. */
   async function runFlush(options: { daily?: boolean } = {}): Promise<FlushReport> {
@@ -119,18 +90,18 @@ export function createApp(deps: AppDeps) {
 
   async function fetch(request: Request): Promise<Response> {
     const url = new URL(request.url)
-    if (url.pathname === ROUTES.event) {
-      if (request.method === 'OPTIONS') return accepted()
-      if (request.method !== 'POST') return new Response(null, { status: 405, headers: CORS })
-      return ingest(request)
-    }
+    if (url.pathname === ROUTES.event) return ingest(request)
     if (url.pathname === ROUTES.health) return json({ ok: true })
 
     const authorized =
       !!deps.ingestSecret && request.headers.get('Authorization') === `Bearer ${deps.ingestSecret}`
-    const isPrivate = [ROUTES.live, ROUTES.today, ROUTES.invalidate, ROUTES.flush].includes(
-      url.pathname as typeof ROUTES.live,
-    )
+    const isPrivate = [
+      ROUTES.live,
+      ROUTES.today,
+      ROUTES.overview,
+      ROUTES.invalidate,
+      ROUTES.flush,
+    ].includes(url.pathname as typeof ROUTES.live)
     if (!isPrivate) return new Response('Not found', { status: 404 })
     if (!authorized) return new Response('Unauthorized', { status: 401 })
 
@@ -143,6 +114,21 @@ export function createApp(deps: AppDeps) {
       return json({ ok: true })
     }
     if (request.method !== 'GET') return new Response(null, { status: 405 })
+    if (url.pathname === ROUTES.overview) {
+      // One call per shard, however many projects the page lists.
+      const byShard = new Map<number, string[]>()
+      for (const key of (url.searchParams.get('sites') ?? '')
+        .split(',')
+        .filter(Boolean)
+        .slice(0, 1000)) {
+        const index = shardOf(key)
+        byShard.set(index, [...(byShard.get(index) ?? []), key])
+      }
+      const parts = await Promise.all(
+        [...byShard].map(([index, keys]) => deps.shard(index).summary(keys)),
+      )
+      return json(Object.assign({}, ...parts))
+    }
     const shard = deps.shard(shardOf(site))
     if (url.pathname === ROUTES.live) return json({ live: await shard.live(site) })
     return json(await shard.today(site))

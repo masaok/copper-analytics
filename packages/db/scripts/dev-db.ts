@@ -12,7 +12,7 @@ const applied = await runMigrations(
   { query: (text, params) => db.query(text, params as unknown[]) },
   loadMigrations(),
 )
-const server = new PGLiteSocketServer({ db, port, host: '127.0.0.1' })
+const server = new PGLiteSocketServer({ db, port, host: '127.0.0.1', maxConnections: 20 })
 await server.start()
 console.log(`Postgres (PGlite) on postgres://postgres@localhost:${port}/postgres`)
 console.log(applied.length ? `Applied: ${applied.join(', ')}` : 'Schema is up to date.')

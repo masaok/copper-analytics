@@ -1,4 +1,4 @@
-import type { ProjectConfig } from '@copper/core'
+import type { ProjectConfig } from './types'
 
 /** The part of Workers KV this needs. A Map-backed fake satisfies it in tests. */
 export interface ConfigCache {

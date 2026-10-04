@@ -1,15 +1,16 @@
 import {
+  type ConfigCache,
   defaultFilter,
   type FlushUnit,
   HOUR_MS,
   type ProjectConfig,
+  ProjectDirectory,
   SHARD_COUNT,
   type Store,
   shardOf,
 } from '@copper/core'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createApp } from '../src/app'
-import { type ConfigCache, ProjectDirectory } from '../src/projects'
 import { MemoryShardStorage, ShardCore } from '../src/shard-core'
 
 const CHROME =
@@ -173,6 +174,19 @@ describe('private routes', () => {
     )
     await pageview()
     expect(loads).toEqual([SITE, SITE])
+  })
+})
+
+describe('GET /overview', () => {
+  it('returns live visitors and unflushed counters for several projects in one call', async () => {
+    await pageview()
+    await pageview({ headers: { 'CF-Connecting-IP': '203.0.113.8' } })
+    const res = await get(`/overview?sites=${SITE},zzzzzzzzzz`)
+    expect(await res.json()).toEqual({
+      [SITE]: { live: 2, pageviews: 2, dayVisitors: 2 },
+      zzzzzzzzzz: { live: 0, pageviews: 0, dayVisitors: 0 },
+    })
+    expect((await get(`/overview?sites=${SITE}`, 'wrong')).status).toBe(401)
   })
 })
 

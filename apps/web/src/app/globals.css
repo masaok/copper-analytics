@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* The shared components live outside this app, so name their folder for class detection. */
+@source "../../../../packages/ui/src";
 
 /* Copper the metal, and the verdigris it weathers to. Everything else stays neutral. */
 :root {
@@ -9,6 +11,8 @@
   --line: #dfe4e2;
   --copper: #a8521f;
   --copper-soft: #f6e9df;
+  /* The data color. Checked against both surfaces with the dataviz palette validator. */
+  --chart: #a8521f;
   --patina: #1f7462;
   --danger: #a3261f;
 }
@@ -22,6 +26,7 @@
     --line: #27312e;
     --copper: #e39258;
     --copper-soft: #2c1e14;
+    --chart: #c87a42;
     --patina: #5fbda6;
     --danger: #ef8a80;
   }

@@ -2,6 +2,7 @@ import {
   defaultFilter,
   HOUR_MS,
   type PageEvent,
+  ProjectDirectory,
   SESSION_MS,
   SHARD_COUNT,
   syntheticEvents,
@@ -11,7 +12,6 @@ import { createTestDb } from '@copper/db/testing'
 import { eq } from 'drizzle-orm'
 import { describe, expect, it } from 'vitest'
 import { createApp } from '../src/app'
-import { ProjectDirectory } from '../src/projects'
 import { MemoryShardStorage, ShardCore } from '../src/shard-core'
 
 const T0 = Date.UTC(2026, 9, 5, 3, 0, 0)
