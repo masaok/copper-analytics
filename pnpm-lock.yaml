@@ -197,9 +197,6 @@ importers:
       '@types/node':
         specifier: ^22
         version: 22.20.5
-      drizzle-orm:
-        specifier: ^0.45.3
-        version: 0.45.3(@cloudflare/workers-types@5.20260921.1)(@electric-sql/pglite@0.5.8)(@neondatabase/serverless@1.2.0)(@types/pg@8.23.1)(kysely@0.29.6)(pg@8.23.1)
       typescript:
         specifier: ^5.9.0
         version: 5.9.3
