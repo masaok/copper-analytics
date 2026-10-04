@@ -3,14 +3,23 @@
 import { generateSiteKey } from '@copper/core'
 import { schema } from '@copper/db'
 import { and, eq } from 'drizzle-orm'
-import { revalidatePath } from 'next/cache'
+import { updateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { requireUser } from '@/lib/auth'
+import { invalidateProject } from '@/lib/buffer'
+import { ownerTag, projectTag } from '@/lib/cache'
 import { db } from '@/lib/db'
 import { countProjects } from './queries'
 import { parseProjectInput } from './validate'
 
 const { project } = schema
+
+/** Drops every cached copy of a project: the dashboard's and the ingest side's. */
+async function projectChanged(ownerId: string, siteKey: string): Promise<void> {
+  updateTag(ownerTag(ownerId))
+  updateTag(projectTag(siteKey))
+  await invalidateProject(siteKey)
+}
 
 export interface FormState {
   error?: string
@@ -40,7 +49,7 @@ export async function createProject(_prev: FormState, form: FormData): Promise<F
   await db()
     .insert(project)
     .values({ ...input.value, siteKey, ownerId: user.id })
-  revalidatePath('/dashboard')
+  await projectChanged(user.id, siteKey)
   redirect(`/p/${siteKey}/settings?created=1`)
 }
 
@@ -56,8 +65,7 @@ export async function updateProject(
     .update(project)
     .set({ ...input.value, isPublic: form.get('isPublic') === 'on' })
     .where(and(eq(project.ownerId, user.id), eq(project.siteKey, siteKey)))
-  revalidatePath('/dashboard')
-  revalidatePath(`/p/${siteKey}`, 'layout')
+  await projectChanged(user.id, siteKey)
   return { saved: true, values: submitted(form) }
 }
 
@@ -66,6 +74,6 @@ export async function deleteProject(siteKey: string): Promise<void> {
   await db()
     .delete(project)
     .where(and(eq(project.ownerId, user.id), eq(project.siteKey, siteKey)))
-  revalidatePath('/dashboard')
+  await projectChanged(user.id, siteKey)
   redirect('/dashboard')
 }

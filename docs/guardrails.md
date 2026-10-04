@@ -25,6 +25,8 @@ Each rule and the thing that enforces it. A rule with nothing in the right-hand 
 | No IP address or user agent is stored | `apps/ingest/test/shard.test.ts` ("stores neither the IP address nor the user agent") |
 | A failed flush never loses or double counts an hour | `apps/ingest/test/app.test.ts`, `packages/db/test/store.test.ts` |
 | Unknown site keys cannot keep the database awake | `ProjectDirectory` negative cache and lookup budget; `apps/ingest/test/app.test.ts` |
+| Repeat dashboard visits do not query the database | `unstable_cache` with `project:` and `owner:` tags; check with `COPPER_DEBUG=1` and `/api/health` |
+| Chart colors pass the palette checks on both surfaces | `--chart` in `apps/web/src/app/globals.css`, validated with the dataviz palette script |
 | Script entry points start outside the bundler and test runner | `migrations` CI job runs `migrate` and `seed` with `tsx` against a real Postgres |
 | One Node major everywhere | `.nvmrc`, `engines` (`22.x`) and `@types/node` (`^22`) agree; CI reads `.nvmrc`; Dependabot holds `@types/node` majors |
 | The dev overlay is not in screenshots | `devIndicators: false` in `apps/web/next.config.ts` |

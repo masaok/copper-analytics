@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Shell } from '@/components/shell'
+import { buttonClass } from '@/components/ui'
 import { updateProject } from '@/features/projects/actions'
 import { DeleteProject } from '@/features/projects/delete-project'
 import { ProjectForm } from '@/features/projects/project-form'
@@ -9,6 +10,7 @@ import { getOwnedProject } from '@/features/projects/queries'
 import { Snippet } from '@/features/projects/snippet'
 import { snippetFor } from '@/features/projects/snippet-code'
 import { requireUser } from '@/lib/auth'
+import { liveSource } from '@/lib/buffer'
 import { env } from '@/lib/env'
 
 export const metadata: Metadata = { title: 'Project settings' }
@@ -23,12 +25,16 @@ export default async function Settings({
   if (!project) notFound()
   const created = (await searchParams).created === '1'
   const appUrl = env().BETTER_AUTH_URL
+  const received = (await liveSource().today(siteKey)).pageviews
 
   return (
     <Shell user={user}>
-      <p className="mb-1 text-sm text-muted">
+      <p className="mb-1 flex gap-4 text-sm text-muted">
         <Link href="/dashboard" className="hover:underline">
           All projects
+        </Link>
+        <Link href={`/p/${project.siteKey}`} className="hover:underline">
+          Dashboard
         </Link>
       </p>
       <h1 className="mb-8 text-xl font-semibold tracking-tight">{project.name}</h1>
@@ -41,6 +47,25 @@ export default async function Settings({
             : 'Paste this into the <head> of every page you want counted.'}
         </p>
         <Snippet code={snippetFor(appUrl, project.siteKey)} />
+        <p className="text-sm" data-testid="verify-install">
+          {received > 0 ? (
+            <span className="text-patina">
+              Installed: {received} {received === 1 ? 'pageview' : 'pageviews'} received since the
+              last flush.
+            </span>
+          ) : (
+            <span className="text-muted">
+              No pageviews received in the last few minutes. Open your site in a browser, then{' '}
+              <Link
+                href={`/p/${project.siteKey}/settings`}
+                className="text-ink underline underline-offset-4"
+              >
+                check again
+              </Link>
+              .
+            </span>
+          )}
+        </p>
       </section>
 
       <section className="mb-10 flex flex-col gap-4">
@@ -62,6 +87,16 @@ export default async function Settings({
             </Link>
           </p>
         ) : null}
+      </section>
+
+      <section className="mb-10 flex flex-col gap-3">
+        <h2 className="font-medium">Export</h2>
+        <p className="max-w-xl text-sm text-muted">Every stored day as a CSV file.</p>
+        <div>
+          <a href={`/p/${project.siteKey}/export.csv`} className={buttonClass('quiet')}>
+            Download CSV
+          </a>
+        </div>
       </section>
 
       <section className="flex flex-col gap-3 border-t border-line pt-8">

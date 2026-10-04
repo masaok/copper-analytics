@@ -1,6 +1,7 @@
 {
   "extends": ["//"],
   "tasks": {
+    "build": { "outputs": ["dist/**", "src/generated.ts"] },
     "typecheck": { "dependsOn": ["build"] },
     "test": { "dependsOn": ["build"] }
   }
