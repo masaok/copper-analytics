@@ -19,12 +19,15 @@
     "check:features": "node scripts/check-feature-map.mjs",
     "check": "pnpm lint && pnpm test:scripts && pnpm check:docs && pnpm check:features && pnpm typecheck && pnpm test",
     "verify": "pnpm check && pnpm build",
-    "prepare": "lefthook install",
-    "test:scripts": "node --test scripts/test/*.test.mjs"
+    "prepare": "husky",
+    "test:scripts": "node --test scripts/test/*.test.mjs",
+    "dev:db": "pnpm --filter @copper/db dev-db",
+    "seed": "pnpm --filter @copper/web seed"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
-    "lefthook": "^2.1.16",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
     "turbo": "^2.11.7",
     "typescript": "^5.9.0"
   }

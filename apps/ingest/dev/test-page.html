@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Copper tracker test page</title>
+    <!-- Serve this file over http and point data-api at a local Worker: `wrangler dev` listens on 8787. -->
+    <script defer src="/c.js" data-site="devsite001" data-api="http://localhost:8787/e" data-dev></script>
+  </head>
+  <body>
+    <h1>Copper tracker test page</h1>
+    <p><button type="button" id="nav">Navigate with pushState</button></p>
+    <script>
+      let n = 0
+      document.getElementById('nav').addEventListener('click', () => {
+        history.pushState({}, '', `/page-${++n}`)
+      })
+    </script>
+  </body>
+</html>

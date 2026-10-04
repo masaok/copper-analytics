@@ -1,0 +1,25 @@
+{
+  "name": "@copper/ingest",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@copper/core": "workspace:*",
+    "@copper/db": "workspace:*"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20260921.1",
+    "@types/node": "^22",
+    "drizzle-orm": "^0.45.3",
+    "typescript": "^5.9.0",
+    "vitest": "^5.0.3",
+    "wrangler": "^4.147.0"
+  }
+}

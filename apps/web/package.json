@@ -8,13 +8,16 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
     "@copper/core": "workspace:*",
     "@copper/db": "workspace:*",
+    "@copper/tracker": "workspace:*",
     "@copper/ui": "workspace:*",
     "better-auth": "^1.7.7",
+    "drizzle-orm": "^0.45.3",
     "next": "16.3.8",
     "react": "19.2.8",
     "react-dom": "19.2.8",
@@ -27,6 +30,7 @@
     "@types/react-dom": "^19",
     "tailwindcss": "^4",
     "typescript": "^5.9.0",
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.3",
+    "tsx": "^4.23.15"
   }
 }

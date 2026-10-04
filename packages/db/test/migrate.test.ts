@@ -61,7 +61,7 @@ describe('migrations', () => {
     expect(kept.rows).toEqual([{ t: null }])
     const recorded = await pg.query('select name from copper_migrations')
     expect(recorded.rows).toEqual([])
-    // The advisory lock was released, so a later run is not stuck behind it.
+    // The lock went with the rolled-back transaction, so a later run is not stuck behind it.
     expect(await runMigrations(clientOf(pg), [{ name: '0000_ok.sql', sql: 'select 1' }])).toEqual([
       '0000_ok.sql',
     ])

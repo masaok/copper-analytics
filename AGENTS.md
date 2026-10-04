@@ -13,6 +13,8 @@ Copper Analytics is a cookieless traffic dashboard. This repo is the complete, s
 | One package's tests | `pnpm --filter @copper/core test` |
 | New migration after a schema change | `pnpm --filter @copper/db generate` |
 | Apply migrations | `DATABASE_URL=... pnpm --filter @copper/db migrate` |
+| Local Postgres, nothing to install | `pnpm dev:db` |
+| Demo account and 30 days of traffic | `DATABASE_URL=... pnpm seed` |
 
 Run `pnpm verify` before you report work as done, and paste its output. If a step could not run, say which.
 

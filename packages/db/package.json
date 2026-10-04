@@ -7,14 +7,15 @@
     ".": "./src/index.ts",
     "./node": "./src/node.ts",
     "./neon": "./src/neon.ts",
-    "./testing": "./src/testing.ts"
+    "./testing": "./src/testing.ts",
+    "./migrator": "./src/migrator.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "generate": "drizzle-kit generate",
     "migrate": "tsx scripts/migrate.ts",
-    "seed": "tsx scripts/seed.ts"
+    "dev-db": "tsx scripts/dev-db.ts"
   },
   "dependencies": {
     "@copper/core": "workspace:*",
@@ -29,6 +30,7 @@
     "drizzle-kit": "^0.31.11",
     "tsx": "^4.23.15",
     "typescript": "^5.9.0",
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.3",
+    "@electric-sql/pglite-socket": "^0.2.11"
   }
 }
