@@ -30,12 +30,7 @@ Each rule and the thing that enforces it. A rule with nothing in the right-hand 
 | Script entry points start outside the bundler and test runner | `migrations` CI job runs `migrate` and `seed` with `tsx` against a real Postgres |
 | One Node major everywhere | `.nvmrc`, `engines` (`22.x`) and `@types/node` (`^22`) agree; CI reads `.nvmrc`; Dependabot holds `@types/node` majors |
 | The dev overlay is not in screenshots | `devIndicators: false` in `apps/web/next.config.ts` |
-
-## Waiting on a person
-
-| Rule | What is missing |
-| --- | --- |
-| A red or missing check blocks the merge | Branch protection on `main` is a repository setting, not a file. Require `lint`, `docs`, `typecheck`, `test`, `build` and `migrations`, and require branches to be up to date. Then open one pull request that fails on purpose and confirm the merge is refused. |
+| A red or missing check blocks the merge | Branch protection on `main` requires `lint`, `docs`, `typecheck`, `test`, `build` and `migrations`, up to date, admins included |
 
 ## Not adopted
 

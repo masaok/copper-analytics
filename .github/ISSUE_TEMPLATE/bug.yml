@@ -1,0 +1,39 @@
+name: Bug report
+description: Something counts wrong, renders wrong or fails.
+labels: [bug]
+body:
+  - type: input
+    id: surface
+    attributes:
+      label: Where
+      description: The route or command, as named in docs/feature-map.md if you can find it.
+      placeholder: /p/[siteKey]?range=7d
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The exact steps or commands, starting from a fresh `pnpm seed` if data matters.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected, and what happened instead
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Mode
+      options:
+        - Simple (one Node process)
+        - Edge (Cloudflare Worker and Neon)
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Commit or version

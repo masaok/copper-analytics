@@ -94,6 +94,10 @@ pnpm verify   # lint, checks, typecheck, tests and the production build
 
 [CONTRIBUTING.md](CONTRIBUTING.md) has the process for people, [AGENTS.md](AGENTS.md) has the rules for changes, [docs/feature-map.md](docs/feature-map.md) lists every route with a command that reaches it, and [docs/guardrails.md](docs/guardrails.md) maps each rule to the check that enforces it.
 
+## Changes
+
+[CHANGELOG.md](CHANGELOG.md) lists what each version added.
+
 ## License
 
 [MIT](LICENSE)
