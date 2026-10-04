@@ -28,6 +28,7 @@ Run `pnpm verify` before you report work as done, and paste its output. If a ste
 | `packages/db` | Drizzle schema, SQL migrations, the Postgres `Store` |
 | `packages/tracker` | `c.js`, the browser script |
 | `packages/ui` | Chart and table components |
+| `packages/next` | `@copper-analytics/next`, the `<CopperAnalytics />` component |
 
 `apps/web` uses a Next.js version with breaking changes. Read [apps/web/AGENTS.md](apps/web/AGENTS.md) before editing it.
 

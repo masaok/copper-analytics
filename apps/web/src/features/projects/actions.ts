@@ -1,5 +1,6 @@
 'use server'
 
+import { createHash, randomBytes } from 'node:crypto'
 import { generateSiteKey } from '@copper/core'
 import { schema } from '@copper/db'
 import { and, eq } from 'drizzle-orm'
@@ -76,4 +77,23 @@ export async function deleteProject(siteKey: string): Promise<void> {
     .where(and(eq(project.ownerId, user.id), eq(project.siteKey, siteKey)))
   await projectChanged(user.id, siteKey)
   redirect('/dashboard')
+}
+
+export interface TokenState {
+  /** Shown once. Only its hash is stored. */
+  token?: string
+}
+
+const hashToken = (token: string): string => createHash('sha256').update(token).digest('hex')
+
+/** Issues a new read-only stats API token for a project, replacing any earlier one. */
+export async function rotateApiToken(siteKey: string, _prev: TokenState): Promise<TokenState> {
+  const user = await requireUser()
+  const token = `cpr_${randomBytes(24).toString('hex')}`
+  await db()
+    .update(project)
+    .set({ apiTokenHash: hashToken(token) })
+    .where(and(eq(project.ownerId, user.id), eq(project.siteKey, siteKey)))
+  await projectChanged(user.id, siteKey)
+  return { token }
 }

@@ -42,7 +42,9 @@ export function readEnv(source: Record<string, string | undefined>): Env {
     problems.push('INGEST_URL and INGEST_SECRET: required when COPPER_MODE=edge')
   }
   if (problems.length > 0) {
-    throw new Error(`Missing configuration:\n  ${problems.join('\n  ')}\nSee .env.example.`)
+    throw new Error(
+      `Missing configuration:\n  ${problems.join('\n  ')}\nSee .env.example and docs/SELF_HOSTING.md.`,
+    )
   }
   return {
     DATABASE_URL: source.DATABASE_URL as string,
