@@ -29,7 +29,7 @@
     "@types/pg": "^8",
     "drizzle-kit": "^0.31.11",
     "tsx": "^4.23.15",
-    "typescript": "^5.9.0",
+    "typescript": "^7.0.2",
     "vitest": "^5.0.3",
     "@electric-sql/pglite-socket": "^0.2.11"
   }
