@@ -140,5 +140,6 @@ describe('one hour of traffic, end to end', () => {
     const again = await app.runFlush()
     expect(again).toMatchObject({ shards: 0, applied: 0 })
     expect(await db.select().from(schema.flushLog)).toHaveLength(report.applied)
-  })
+    // A few hundred requests through an in-process Postgres take about 6 s on a hosted runner.
+  }, 60_000)
 })

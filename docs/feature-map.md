@@ -5,6 +5,7 @@ One row per user-facing surface. `pnpm check:features` fails when a route in cod
 | Surface | What it is | Handler | Reproduce |
 | --- | --- | --- | --- |
 | `web:/` | Sign-in; signed-in users go to `/dashboard` | `apps/web/src/app/page.tsx` | `curl -s localhost:3000/` |
+| `web:/docs` | Public docs: install, proxy, opt-out, API, self-hosting | `apps/web/src/app/docs/page.tsx` | `curl -s localhost:3000/docs` |
 | `web:/dashboard` | All projects: totals, live, today vs yesterday, 30-day sparkline | `apps/web/src/app/dashboard/page.tsx`, `features/stats/data.ts` (`loadOverview`) | Sign in, open `/dashboard` |
 | `web:/new` | Create a project | `apps/web/src/app/new/page.tsx`, `features/projects/actions.ts` (`createProject`) | Sign in, open `/new`, submit the form |
 | `web:/p/[siteKey]` | Project report: range picker, KPI cards, chart, breakdown panels, live count | `apps/web/src/app/p/[siteKey]/page.tsx`, `features/stats/report.tsx`, `features/stats/data.ts` (`loadReport`) | Sign in, open `/p/demoshop01?range=7d&metric=pageviews` |
@@ -12,6 +13,7 @@ One row per user-facing surface. `pnpm check:features` fails when a route in cod
 | `web:/p/[siteKey]/export.csv` | Every stored day as CSV | `apps/web/src/app/p/[siteKey]/export.csv/route.ts` | Signed in: `/p/demoshop01/export.csv` |
 | `web:/api/live/[siteKey]` | Live visitor count, polled by the report header | `apps/web/src/app/api/live/[siteKey]/route.ts` | `curl -s localhost:3000/api/live/<public key>` |
 | `web:/api/e` | Simple-mode pageview ingest. Always answers 204 | `apps/web/src/app/api/e/route.ts`, `packages/core/src/ingest.ts` | `curl -i -X POST localhost:3000/api/e -H 'User-Agent: Mozilla/5.0 Chrome/140' -d '{"s":"demoshop01","u":"https://shop.acme.test/"}'` |
+| `web:/api/v1/stats` | Read-only stats for one project, by per-project token | `apps/web/src/app/api/v1/stats/route.ts` | `curl -H 'Authorization: Bearer <token>' 'localhost:3000/api/v1/stats?site=demoshop01&range=7d'` |
 | `web:/api/revalidate` | Drops cached reports after a flush | `apps/web/src/app/api/revalidate/route.ts` | `curl -s -X POST localhost:3000/api/revalidate -H 'Authorization: Bearer $REVALIDATE_SECRET' -d '{"siteKeys":["demoshop01"]}'` |
 | `web:/p/[siteKey]/settings` | Install snippet, details, sharing, delete | `apps/web/src/app/p/[siteKey]/settings/page.tsx` | Create a project; you land here |
 | `web:/api/auth/[...all]` | Better Auth endpoints (OAuth callbacks, session) | `apps/web/src/lib/auth.ts` | `curl -s -X POST localhost:3000/api/auth/sign-in/social -H 'content-type: application/json' -d '{"provider":"github"}'` |

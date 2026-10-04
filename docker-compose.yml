@@ -1,0 +1,38 @@
+# `docker compose up` gives you a dashboard on http://localhost:3000 with a demo
+# account and 30 days of made-up traffic. See docs/SELF_HOSTING.md before exposing it.
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_PASSWORD: copper
+      POSTGRES_DB: copper
+    volumes:
+      - copper-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d copper']
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  web:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - '3000:3000'
+    environment:
+      DATABASE_URL: postgres://postgres:copper@db:5432/copper
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      # Replace before real use: openssl rand -base64 32
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-change-me-this-default-is-public}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      # The demo account and its seeded traffic. Set both to 0 for real use.
+      COPPER_DEMO_LOGIN: ${COPPER_DEMO_LOGIN:-1}
+      COPPER_SEED: ${COPPER_SEED:-1}
+
+volumes:
+  copper-db:

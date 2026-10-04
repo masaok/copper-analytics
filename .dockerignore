@@ -1,0 +1,11 @@
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+**/.wrangler
+**/.env*
+!.env.example
+**/.dev.vars
+.git
+.config
+.pglite
