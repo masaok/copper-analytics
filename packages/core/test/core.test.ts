@@ -5,6 +5,7 @@ import {
   defaultFilter,
   flush,
   generateSiteKey,
+  hasBearer,
   localDay,
   MemoryBuffer,
   mergeBreakdown,
@@ -16,6 +17,7 @@ import {
   referrerDomain,
   SITE_KEY_PATTERN,
   type Store,
+  safeEqual,
   shardOf,
   toHit,
   topEntries,
@@ -159,6 +161,26 @@ describe('top-N', () => {
       [OTHER]: [4, 4],
     })
     expect(topEntries(merged, 'page', 3).map((r) => r.key)).toEqual(['/', '/b', '/a'])
+  })
+})
+
+describe('secrets', () => {
+  it('compares without leaking where two strings differ', () => {
+    expect(safeEqual('Bearer abc', 'Bearer abc')).toBe(true)
+    expect(safeEqual('Bearer abd', 'Bearer abc')).toBe(false)
+    expect(safeEqual('Bearer abc', 'Bearer abcd')).toBe(false)
+    expect(safeEqual('', 'x')).toBe(false)
+    expect(safeEqual('x', '')).toBe(false)
+  })
+
+  it('accepts only the configured bearer secret, and nothing when none is configured', () => {
+    const request = (auth?: string) =>
+      new Request('https://x.test/', { headers: auth ? { Authorization: auth } : {} })
+    expect(hasBearer(request('Bearer s3cret'), 's3cret')).toBe(true)
+    expect(hasBearer(request('Bearer wrong'), 's3cret')).toBe(false)
+    expect(hasBearer(request(), 's3cret')).toBe(false)
+    expect(hasBearer(request('Bearer undefined'), undefined)).toBe(false)
+    expect(hasBearer(request('Bearer '), '')).toBe(false)
   })
 })
 

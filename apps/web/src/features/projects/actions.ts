@@ -62,20 +62,24 @@ export async function updateProject(
   const user = await requireUser()
   const input = parseProjectInput(form)
   if (!input.ok) return { error: input.error, values: submitted(form) }
-  await db()
+  const changed = await db()
     .update(project)
     .set({ ...input.value, isPublic: form.get('isPublic') === 'on' })
     .where(and(eq(project.ownerId, user.id), eq(project.siteKey, siteKey)))
+    .returning({ id: project.id })
+  // Nothing matched: not this user's project, so there is nothing to refresh.
+  if (changed.length === 0) return { error: 'That project no longer exists.' }
   await projectChanged(user.id, siteKey)
   return { saved: true, values: submitted(form) }
 }
 
 export async function deleteProject(siteKey: string): Promise<void> {
   const user = await requireUser()
-  await db()
+  const deleted = await db()
     .delete(project)
     .where(and(eq(project.ownerId, user.id), eq(project.siteKey, siteKey)))
-  await projectChanged(user.id, siteKey)
+    .returning({ id: project.id })
+  if (deleted.length > 0) await projectChanged(user.id, siteKey)
   redirect('/dashboard')
 }
 
@@ -90,10 +94,12 @@ const hashToken = (token: string): string => createHash('sha256').update(token).
 export async function rotateApiToken(siteKey: string, _prev: TokenState): Promise<TokenState> {
   const user = await requireUser()
   const token = `cpr_${randomBytes(24).toString('hex')}`
-  await db()
+  const changed = await db()
     .update(project)
     .set({ apiTokenHash: hashToken(token) })
     .where(and(eq(project.ownerId, user.id), eq(project.siteKey, siteKey)))
+    .returning({ id: project.id })
+  if (changed.length === 0) return {}
   await projectChanged(user.id, siteKey)
   return { token }
 }

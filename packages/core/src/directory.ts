@@ -46,8 +46,9 @@ export class ProjectDirectory {
         this.windowStart = now
         this.loads = 0
       }
-      // Past the budget, treat the key as unknown for now without remembering that.
-      if (++this.loads > MAX_LOADS_PER_WINDOW) return null
+      // A project this isolate already knew keeps its last settings, so a flood of junk keys
+      // cannot push real sites out. Only keys never seen here are refused.
+      if (++this.loads > MAX_LOADS_PER_WINDOW) return hit?.value ?? null
       value = await this.load(siteKey)
       await this.cache
         ?.put(siteKey, value ? JSON.stringify(value) : UNKNOWN, {

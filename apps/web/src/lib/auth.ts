@@ -20,8 +20,9 @@ function createAuth() {
     },
     emailAndPassword: { enabled: config.demoLogin, disableSignUp: true },
     account: {
-      // Both providers verify email ownership, so the same address is the same person.
-      accountLinking: { enabled: true, trustedProviders: ['github', 'google'] },
+      // The same address signs into the same account, but only when the provider says the
+      // address is verified. No provider is trusted to skip that check.
+      accountLinking: { enabled: true },
     },
     session: {
       // A signed cookie carries the session for five minutes, so most requests skip the database.
