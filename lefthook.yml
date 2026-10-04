@@ -1,0 +1,11 @@
+# The commit hook only formats staged files. The slow checks run before a push and in CI.
+pre-commit:
+  commands:
+    format:
+      glob: "*.{ts,tsx,js,mjs,json,jsonc,css}"
+      run: pnpm exec biome format --write --no-errors-on-unmatched {staged_files}
+      stage_fixed: true
+pre-push:
+  commands:
+    verify:
+      run: pnpm verify
