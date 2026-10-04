@@ -3,7 +3,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Shell } from '@/components/shell'
 import { buttonClass } from '@/components/ui'
-import { updateProject } from '@/features/projects/actions'
+import { rotateApiToken, updateProject } from '@/features/projects/actions'
+import { ApiToken } from '@/features/projects/api-token'
 import { DeleteProject } from '@/features/projects/delete-project'
 import { ProjectForm } from '@/features/projects/project-form'
 import { getOwnedProject } from '@/features/projects/queries'
@@ -87,6 +88,19 @@ export default async function Settings({
             </Link>
           </p>
         ) : null}
+      </section>
+
+      <section className="mb-10 flex flex-col gap-3">
+        <h2 className="font-medium">Stats API</h2>
+        <p className="max-w-xl text-sm text-muted">
+          Read this project's numbers from a script. The token is read-only and works for this
+          project alone.
+        </p>
+        <ApiToken
+          action={rotateApiToken.bind(null, project.siteKey)}
+          hasToken={project.apiTokenHash !== null}
+          example={`curl -H "Authorization: Bearer <token>" \\\n  "${appUrl}/api/v1/stats?site=${project.siteKey}&range=7d"`}
+        />
       </section>
 
       <section className="mb-10 flex flex-col gap-3">

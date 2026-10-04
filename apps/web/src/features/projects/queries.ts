@@ -73,3 +73,18 @@ export const cachedProject = (siteKey: string): Promise<ProjectSummary | null> =
     ['project', siteKey],
     { tags: [projectTag(siteKey)] },
   )()
+
+/** SHA-256 of the project's stats API token, or null. Cached so API calls do not query the database. */
+export const cachedTokenHash = (siteKey: string): Promise<string | null> =>
+  unstable_cache(
+    async () => {
+      const [row] = await db()
+        .select({ hash: project.apiTokenHash })
+        .from(project)
+        .where(eq(project.siteKey, siteKey))
+        .limit(1)
+      return row?.hash ?? null
+    },
+    ['token', siteKey],
+    { tags: [projectTag(siteKey)] },
+  )()
