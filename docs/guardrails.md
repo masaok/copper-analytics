@@ -11,7 +11,7 @@ Each rule and the thing that enforces it. A rule with nothing in the right-hand 
 | Nothing is pushed unchecked | `lefthook` pre-push runs `pnpm verify` |
 | Only `packages/db` opens database connections | Biome `noRestrictedImports` on `pg` and `@neondatabase/serverless` |
 | Migrations apply from empty and match the schema | `migrations` CI job (Postgres service) and `packages/db/test/migrate.test.ts` |
-| Concurrent migration runs do not interleave | Advisory lock in `packages/db/src/migrate.ts` |
+| Concurrent migration runs do not interleave | Transaction-level advisory lock in `packages/db/src/migrate.ts` |
 | A flush is never counted twice | `flush_log` primary key; `packages/db/test/store.test.ts` |
 | Every route has a feature-map row | `pnpm check:features` in the `docs` CI job |
 | Markdown links and anchors resolve | `pnpm check:docs` in the `docs` CI job |
@@ -19,3 +19,5 @@ Each rule and the thing that enforces it. A rule with nothing in the right-hand 
 | The right package manager and Node version | `packageManager` and `engines` in `package.json`; CI reads `.nvmrc` |
 | Installs do not change the lockfile in CI | `pnpm install --frozen-lockfile` in the shared setup action |
 | CI steps are pinned | Third-party actions referenced by commit hash; Dependabot moves them |
+| Secrets and database code stay out of the browser bundle | `import 'server-only'` first in `apps/web/src/lib/{env,db,auth}.ts` and `features/*/queries.ts` |
+| Missing configuration fails by name at startup | `readEnv` in `apps/web/src/lib/env.ts`; `apps/web/test/env.test.ts` |

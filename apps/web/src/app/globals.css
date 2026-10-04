@@ -1,26 +1,57 @@
 @import "tailwindcss";
 
+/* Copper the metal, and the verdigris it weathers to. Everything else stays neutral. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --bg: #ffffff;
+  --surface: #f5f7f6;
+  --ink: #1a2321;
+  --muted: #5d6966;
+  --line: #dfe4e2;
+  --copper: #a8521f;
+  --copper-soft: #f6e9df;
+  --patina: #1f7462;
+  --danger: #a3261f;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg: #0f1413;
+    --surface: #171e1c;
+    --ink: #e7ecea;
+    --muted: #94a09c;
+    --line: #27312e;
+    --copper: #e39258;
+    --copper-soft: #2c1e14;
+    --patina: #5fbda6;
+    --danger: #ef8a80;
   }
 }
 
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-copper: var(--copper);
+  --color-copper-soft: var(--copper-soft);
+  --color-patina: var(--patina);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+:focus-visible {
+  outline: 2px solid var(--copper);
+  outline-offset: 2px;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
 }
