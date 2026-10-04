@@ -9,7 +9,6 @@ import {
 } from '@copper/core'
 import { PgStore, schema } from '@copper/db'
 import { createTestDb } from '@copper/db/testing'
-import { eq } from 'drizzle-orm'
 import { describe, expect, it } from 'vitest'
 import { createApp } from '../src/app'
 import { MemoryShardStorage, ShardCore } from '../src/shard-core'
@@ -103,10 +102,9 @@ describe('one hour of traffic, end to end', () => {
 
     for (const site of SITES) {
       const want = expected.get(site.siteKey) as ReturnType<typeof expectedTotals>
-      const [project] = await db
-        .select()
-        .from(schema.project)
-        .where(eq(schema.project.siteKey, site.siteKey))
+      const [project] = (await db.select().from(schema.project)).filter(
+        (p) => p.siteKey === site.siteKey,
+      )
       const id = (project as { id: number }).id
       const counters = {
         pageviews: want.pageviews,
@@ -115,17 +113,16 @@ describe('one hour of traffic, end to end', () => {
         bounces: want.bounces,
       }
       expect(
-        await db.select().from(schema.statsHourly).where(eq(schema.statsHourly.projectId, id)),
+        (await db.select().from(schema.statsHourly)).filter((r) => r.projectId === id),
       ).toEqual([{ projectId: id, hour: new Date(T0), ...counters }])
       // 03:00 UTC on Oct 5 is still Oct 4 in Los Angeles.
       const day = site.timezone === 'UTC' ? '2026-10-05' : '2026-10-04'
-      expect(
-        await db.select().from(schema.statsDaily).where(eq(schema.statsDaily.projectId, id)),
-      ).toEqual([{ projectId: id, day, ...counters }])
-      const [breakdown] = await db
-        .select()
-        .from(schema.breakdownDaily)
-        .where(eq(schema.breakdownDaily.projectId, id))
+      expect((await db.select().from(schema.statsDaily)).filter((r) => r.projectId === id)).toEqual(
+        [{ projectId: id, day, ...counters }],
+      )
+      const [breakdown] = (await db.select().from(schema.breakdownDaily)).filter(
+        (r) => r.projectId === id,
+      )
       expect(breakdown?.day).toBe(day)
       const pages = breakdown?.data.page ?? {}
       expect(Object.fromEntries(Object.entries(pages).map(([p, [pv]]) => [p, pv]))).toEqual(
