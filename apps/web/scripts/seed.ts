@@ -19,7 +19,12 @@ const SITES: [siteKey: string, name: string, domain: string, visitsPerDay: numbe
   ['demoside04', 'Weekend side project', 'tinytool.test', 22],
   ['demoland05', 'Landing page', 'launch.acme.test', 8],
 ]
-const count = Math.min(Number(process.env.SEED_PROJECTS ?? SITES.length), SITES.length)
+const count = Number(process.env.SEED_PROJECTS ?? SITES.length)
+// Past the named sites, generate as many small ones as asked for.
+for (let n = SITES.length + 1; n <= count; n++) {
+  const id = String(n).padStart(6, '0')
+  SITES.push([`demo${id}`, `Side project ${n}`, `project-${n}.test`, 5 + ((n * 37) % 90)])
+}
 const password = process.env.DEMO_PASSWORD ?? 'copper-demo'
 const email = 'demo@copper.local'
 

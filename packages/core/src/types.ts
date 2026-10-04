@@ -76,6 +76,15 @@ export interface TodaySnapshot extends Counters {
   hours: Record<string, Counters>
 }
 
+/** What the all-projects overview needs for one project, without the breakdowns. */
+export interface LiveSummary {
+  live: number
+  /** Pageviews not yet flushed. */
+  pageviews: number
+  /** Today's visitors not yet flushed. */
+  dayVisitors: number
+}
+
 export interface ProjectConfig {
   siteKey: string
   domains: string[]

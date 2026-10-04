@@ -1,4 +1,5 @@
 export * from './db'
 export * from './migrate'
+export * from './queries'
 export * from './retention'
 export * from './store'

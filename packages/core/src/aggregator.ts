@@ -5,6 +5,7 @@ import {
   type Counters,
   DIMENSIONS,
   DIRECT,
+  type LiveSummary,
   OTHER,
   type PageEvent,
   type ProjectHourDelta,
@@ -250,6 +251,21 @@ export class Aggregator {
     }
     snapshot.breakdown = truncateBreakdown(breakdownOf(merged), DAILY_TOP_N)
     return snapshot
+  }
+
+  /** Live visitors plus the unflushed counters, for many projects at once. */
+  summary(siteKeys: string[], now: number): Record<string, LiveSummary> {
+    const out: Record<string, LiveSummary> = {}
+    for (const siteKey of siteKeys) {
+      let pageviews = 0
+      let dayVisitors = 0
+      for (const agg of this.projects.get(siteKey)?.hours.values() ?? []) {
+        pageviews += agg.pageviews
+        dayVisitors += agg.dayVisitors
+      }
+      out[siteKey] = { live: this.live(siteKey, now), pageviews, dayVisitors }
+    }
+    return out
   }
 
   get projectCount(): number {

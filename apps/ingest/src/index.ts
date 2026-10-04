@@ -1,17 +1,19 @@
 import { DurableObject } from 'cloudflare:workers'
-import type {
-  EventBuffer,
-  FlushUnit,
-  Hit,
-  PageEvent,
-  ProjectConfig,
-  TodaySnapshot,
+import {
+  type ConfigCache,
+  type EventBuffer,
+  type FlushUnit,
+  type Hit,
+  type LiveSummary,
+  type PageEvent,
+  type ProjectConfig,
+  ProjectDirectory,
+  type TodaySnapshot,
 } from '@copper/core'
 import { PgStore } from '@copper/db'
 import { createNeonDb } from '@copper/db/neon'
 import { filter } from 'copper-filter'
 import { createApp } from './app'
-import { type ConfigCache, ProjectDirectory } from './projects'
 import { BATCH_INTERVAL_MS, ShardCore, type ShardStorage } from './shard-core'
 
 export interface Env {
@@ -76,6 +78,9 @@ export class Shard extends DurableObject<Env> implements EventBuffer {
   }
   today(siteKey: string): Promise<TodaySnapshot> {
     return this.core.today(siteKey)
+  }
+  summary(siteKeys: string[]): Promise<Record<string, LiveSummary>> {
+    return this.core.summary(siteKeys)
   }
   pending(now: number): Promise<FlushUnit[]> {
     return this.core.pending(now)

@@ -2,7 +2,7 @@ import { Aggregator } from './aggregator'
 import type { Hit } from './enrich'
 import { randomSalt, visitorId } from './hash'
 import { utcDayIndex } from './time'
-import type { FlushUnit, ProjectConfig, TodaySnapshot } from './types'
+import type { FlushUnit, LiveSummary, ProjectConfig, TodaySnapshot } from './types'
 
 /**
  * Where pageviews wait between arriving and being written to the database.
@@ -13,6 +13,7 @@ export interface EventBuffer {
   add(hit: Hit, dailyCap: number): Promise<boolean>
   live(siteKey: string): Promise<number>
   today(siteKey: string): Promise<TodaySnapshot>
+  summary(siteKeys: string[]): Promise<Record<string, LiveSummary>>
   /** Units ready to store. Each stays buffered, with the same id, until it is acked. */
   pending(now: number): Promise<FlushUnit[]>
   ack(flushIds: string[]): Promise<void>
@@ -87,6 +88,10 @@ export class MemoryBuffer implements EventBuffer {
 
   async today(siteKey: string): Promise<TodaySnapshot> {
     return this.aggregator.today(siteKey)
+  }
+
+  async summary(siteKeys: string[]): Promise<Record<string, LiveSummary>> {
+    return this.aggregator.summary(siteKeys, this.clock())
   }
 
   async pending(now: number): Promise<FlushUnit[]> {

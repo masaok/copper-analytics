@@ -6,6 +6,7 @@ import {
   type Hit,
   HOUR_MS,
   hourStart,
+  type LiveSummary,
   type PageEvent,
   randomSalt,
   type TodaySnapshot,
@@ -94,6 +95,10 @@ export class ShardCore implements EventBuffer {
 
   async today(siteKey: string): Promise<TodaySnapshot> {
     return this.aggregator.today(siteKey)
+  }
+
+  async summary(siteKeys: string[]): Promise<Record<string, LiveSummary>> {
+    return this.aggregator.summary(siteKeys, this.clock())
   }
 
   /** Every finished hour not yet acked. The flush id is the hour, so a retry reuses it. */
