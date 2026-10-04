@@ -1,0 +1,35 @@
+# Edge-mode ingest. Copy the ids for your own account, or pass --config with a private file.
+name = "copper-ingest"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+# The filter is swapped at build time. Point this at a stricter module to replace the default.
+[alias]
+"copper-filter" = "./src/filter.ts"
+
+[triggers]
+crons = ["5 * * * *"]
+
+[[durable_objects.bindings]]
+name = "SHARD"
+class_name = "Shard"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Shard"]
+
+# Optional. Without it the project cache lives only in each isolate's memory.
+# [[kv_namespaces]]
+# binding = "PROJECTS"
+# id = ""
+
+[vars]
+# Public URL of the web app, for revalidation after a flush.
+APP_URL = ""
+
+# Secrets, set with `wrangler secret put` (or .dev.vars locally):
+#   DATABASE_URL       Neon connection string
+#   INGEST_SECRET      shared with the web app; guards /live, /today, /invalidate and /flush
+#   REVALIDATE_SECRET  sent to the web app's /api/revalidate
+#   DEV_PROJECTS       local only: {"<site key>":{"domains":[],"dailyCap":0}} to skip the database

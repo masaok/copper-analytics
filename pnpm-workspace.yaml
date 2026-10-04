@@ -4,7 +4,6 @@ packages:
 allowBuilds:
   "@biomejs/biome": true
   esbuild: true
-  lefthook: true
   sharp: false
   unrs-resolver: false
   workerd: true
