@@ -92,7 +92,7 @@ pnpm install
 pnpm verify   # lint, checks, typecheck, tests and the production build
 ```
 
-[AGENTS.md](AGENTS.md) has the rules for changes, [docs/feature-map.md](docs/feature-map.md) lists every route with a command that reaches it, and [docs/guardrails.md](docs/guardrails.md) maps each rule to the check that enforces it.
+[CONTRIBUTING.md](CONTRIBUTING.md) has the process for people, [AGENTS.md](AGENTS.md) has the rules for changes, [docs/feature-map.md](docs/feature-map.md) lists every route with a command that reaches it, and [docs/guardrails.md](docs/guardrails.md) maps each rule to the check that enforces it.
 
 ## License
 

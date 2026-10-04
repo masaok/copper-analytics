@@ -74,3 +74,8 @@ jobs:
           pnpm --filter @copper/db generate
           git diff --exit-code -- packages/db/migrations
           test -z "$(git status --porcelain -- packages/db/migrations)"
+      # Started the way an operator starts it, so an entry point that dies on import fails here.
+      - name: The seed script starts and runs
+        run: pnpm seed
+        env:
+          SEED_DAYS: 1
