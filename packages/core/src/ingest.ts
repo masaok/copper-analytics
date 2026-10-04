@@ -22,6 +22,9 @@ export const PAGEVIEW_CORS = {
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Max-Age': '86400',
 }
+/** The tracker sends a URL of at most 2,048 characters and a referrer of the same size. */
+export const MAX_BODY_BYTES = 8192
+
 const accepted = () => new Response(null, { status: 204, headers: PAGEVIEW_CORS })
 
 /**
@@ -31,9 +34,13 @@ const accepted = () => new Response(null, { status: 204, headers: PAGEVIEW_CORS 
 export async function handlePageview(request: Request, deps: PageviewDeps): Promise<Response> {
   if (request.method === 'OPTIONS') return accepted()
   if (request.method !== 'POST') return new Response(null, { status: 405, headers: PAGEVIEW_CORS })
+  // A pageview is a few hundred bytes. Refuse anything larger before reading it.
+  if (Number(request.headers.get('Content-Length') ?? 0) > MAX_BODY_BYTES) return accepted()
   let body: unknown
   try {
-    body = JSON.parse(await request.text())
+    const text = await request.text()
+    if (text.length > MAX_BODY_BYTES) return accepted()
+    body = JSON.parse(text)
   } catch {
     return accepted()
   }
@@ -63,4 +70,17 @@ export async function handlePageview(request: Request, deps: PageviewDeps): Prom
   if (deps.waitUntil) deps.waitUntil(work)
   else await work
   return accepted()
+}
+
+/** Compares two secrets without stopping at the first difference, so timing reveals nothing. */
+export function safeEqual(a: string, b: string): boolean {
+  let diff = a.length ^ b.length
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i % (b.length || 1))
+  return diff === 0
+}
+
+/** True when the request carries `Authorization: Bearer <secret>` for a configured secret. */
+export function hasBearer(request: Request, secret: string | undefined): boolean {
+  if (!secret) return false
+  return safeEqual(request.headers.get('Authorization') ?? '', `Bearer ${secret}`)
 }

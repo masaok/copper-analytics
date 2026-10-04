@@ -148,6 +148,22 @@ describe('POST /e', () => {
     expect(loads).toEqual([SITE, 'zzzzzzzzzz', SITE])
   })
 
+  it('ignores a body larger than a pageview can be', async () => {
+    const res = await pageview({ body: { s: SITE, u: 'https://acme.io/', pad: 'x'.repeat(9000) } })
+    expect(res.status).toBe(204)
+    expect((await today()).pageviews).toBe(0)
+  })
+
+  it('keeps serving a known project when junk keys use up the lookup budget', async () => {
+    await pageview()
+    now += 6 * 60_000
+    for (let i = 0; i < 40; i++) {
+      await pageview({ body: { s: `junk${String(i).padStart(6, '0')}`, u: 'https://acme.io/' } })
+    }
+    await pageview({ headers: { 'CF-Connecting-IP': '203.0.113.9' } })
+    expect((await today()).pageviews).toBe(2)
+  })
+
   it('rejects other methods', async () => {
     expect((await app.fetch(new Request('https://e.copper.test/e'))).status).toBe(405)
     const options = await app.fetch(new Request('https://e.copper.test/e', { method: 'OPTIONS' }))

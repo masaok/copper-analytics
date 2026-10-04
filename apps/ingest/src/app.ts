@@ -3,6 +3,7 @@ import {
   type Filter,
   type FlushUnit,
   handlePageview,
+  hasBearer,
   type ProjectDirectory,
   SHARD_COUNT,
   type Store,
@@ -93,8 +94,7 @@ export function createApp(deps: AppDeps) {
     if (url.pathname === ROUTES.event) return ingest(request)
     if (url.pathname === ROUTES.health) return json({ ok: true })
 
-    const authorized =
-      !!deps.ingestSecret && request.headers.get('Authorization') === `Bearer ${deps.ingestSecret}`
+    const authorized = hasBearer(request, deps.ingestSecret)
     const isPrivate = [
       ROUTES.live,
       ROUTES.today,

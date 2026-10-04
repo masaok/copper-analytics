@@ -1,4 +1,5 @@
 import 'server-only'
+import { SITE_KEY_PATTERN } from '@copper/core'
 import { schema } from '@copper/db'
 import { and, asc, count, eq } from 'drizzle-orm'
 import { unstable_cache } from 'next/cache'
@@ -61,18 +62,21 @@ export const cachedProjects = (ownerId: string): Promise<ProjectSummary[]> =>
 
 /** One project by its public key, cached until it changes. Callers check ownership or `isPublic`. */
 export const cachedProject = (siteKey: string): Promise<ProjectSummary | null> =>
-  unstable_cache(
-    async () => {
-      const [row] = await db()
-        .select(summaryColumns)
-        .from(project)
-        .where(eq(project.siteKey, siteKey))
-        .limit(1)
-      return row ?? null
-    },
-    ['project', siteKey],
-    { tags: [projectTag(siteKey)] },
-  )()
+  // A malformed key never reaches the database or leaves a cache entry behind.
+  !SITE_KEY_PATTERN.test(siteKey)
+    ? Promise.resolve(null)
+    : unstable_cache(
+        async () => {
+          const [row] = await db()
+            .select(summaryColumns)
+            .from(project)
+            .where(eq(project.siteKey, siteKey))
+            .limit(1)
+          return row ?? null
+        },
+        ['project', siteKey],
+        { tags: [projectTag(siteKey)] },
+      )()
 
 /** SHA-256 of the project's stats API token, or null. Cached so API calls do not query the database. */
 export const cachedTokenHash = (siteKey: string): Promise<string | null> =>

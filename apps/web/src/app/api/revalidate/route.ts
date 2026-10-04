@@ -1,3 +1,4 @@
+import { hasBearer } from '@copper/core'
 import { ownersOf } from '@copper/db'
 import { revalidateTag } from 'next/cache'
 import { ownerTag, projectTag } from '@/lib/cache'
@@ -6,8 +7,7 @@ import { env } from '@/lib/env'
 
 /** Called by the ingest Worker after a flush, with the site keys that have new data. */
 export async function POST(request: Request) {
-  const secret = env().revalidateSecret
-  if (!secret || request.headers.get('Authorization') !== `Bearer ${secret}`) {
+  if (!hasBearer(request, env().revalidateSecret)) {
     return new Response('Unauthorized', { status: 401 })
   }
   const body = (await request.json().catch(() => null)) as { siteKeys?: unknown } | null

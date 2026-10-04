@@ -31,6 +31,9 @@ Each rule and the thing that enforces it. A rule with nothing in the right-hand 
 | One Node major everywhere | `.nvmrc`, `engines` (`22.x`) and `@types/node` (`^22`) agree; CI reads `.nvmrc`; Dependabot holds `@types/node` majors |
 | The dev overlay is not in screenshots | `devIndicators: false` in `apps/web/next.config.ts` |
 | A red or missing check blocks the merge | Branch protection on `main` requires `lint`, `docs`, `typecheck`, `test`, `build` and `migrations`, up to date, admins included |
+| Secrets are compared in constant time, and an unset secret authorizes nobody | `hasBearer` in `packages/core/src/ingest.ts`; `packages/core/test/core.test.ts` |
+| A flood of junk site keys cannot push known projects out | `ProjectDirectory` serves its last answer past the lookup budget; `apps/ingest/test/app.test.ts` |
+| Accounts link across providers only on a provider-verified email | `accountLinking` with no trusted providers in `apps/web/src/lib/auth.ts` |
 
 ## Not adopted
 
