@@ -57,7 +57,9 @@ export interface SessionUser {
 }
 
 export async function currentUser(): Promise<SessionUser | null> {
-  const session = await auth().api.getSession({ headers: await headers() })
+  // Reading the request first marks the route dynamic, so a build never reaches the config check.
+  const requestHeaders = await headers()
+  const session = await auth().api.getSession({ headers: requestHeaders })
   if (!session) return null
   const { id, name, email, image } = session.user
   const projectLimit = (session.user as { projectLimit?: number }).projectLimit ?? 10
