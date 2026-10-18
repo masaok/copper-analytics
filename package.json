@@ -28,7 +28,7 @@
     "@biomejs/biome": "2.5.15",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
-    "turbo": "^2.11.7",
+    "turbo": "^2.11.8",
     "typescript": "^7.0.2"
   }
 }
