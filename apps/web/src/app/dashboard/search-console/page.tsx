@@ -2,8 +2,16 @@ import { formatNumber, Sparkline, TimeSeriesChart } from '@copper/ui'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Shell } from '@/components/shell'
-import { GOOGLE_RANGES } from '@/features/google/ranges'
-import { one, percent, RangeNav, RankedTable, rangeParam, shortDay } from '@/features/google/ui'
+import { GOOGLE_RANGES, sumByDay, weightedMean } from '@/features/google/ranges'
+import {
+  Overview,
+  one,
+  percent,
+  RangeNav,
+  RankedTable,
+  rangeParam,
+  shortDay,
+} from '@/features/google/ui'
 import { cachedProjects } from '@/features/projects/queries'
 import { loadSearchConsole, type SearchRow } from '@/features/search-console/data'
 import { requireUser } from '@/lib/auth'
@@ -32,7 +40,9 @@ function RowsTable({ rows, keyLabel }: { rows: SearchRow[]; keyLabel: string }) 
   )
 }
 
-export default async function SearchConsolePage({ searchParams }: PageProps<'/search-console'>) {
+export default async function SearchConsolePage({
+  searchParams,
+}: PageProps<'/dashboard/search-console'>) {
   const user = await requireUser()
   const search = await searchParams
   const range = rangeParam(search.range)
@@ -40,10 +50,13 @@ export default async function SearchConsolePage({ searchParams }: PageProps<'/se
   const data = await loadSearchConsole(projects, GOOGLE_RANGES[range])
   const sites = [...(data?.sites ?? [])].sort((a, b) => b.totals.clicks - a.totals.clicks)
   const selected = sites.find((s) => s.site.host === one(search.site)) ?? sites[0]
+  const ok = sites.filter((s) => !s.error)
+  const clicks = ok.reduce((n, s) => n + s.totals.clicks, 0)
+  const impressions = ok.reduce((n, s) => n + s.totals.impressions, 0)
   const href = (params: { range?: string; site?: string }) => {
     const query = new URLSearchParams({ range, ...(selected ? { site: selected.site.host } : {}) })
     for (const [key, value] of Object.entries(params)) if (value) query.set(key, value)
-    return `/search-console?${query}`
+    return `/dashboard/search-console?${query}`
   }
 
   return (
@@ -72,6 +85,25 @@ export default async function SearchConsolePage({ searchParams }: PageProps<'/se
             Google searches from {shortDay(data.window.from)} to {shortDay(data.window.to)}. The
             latest days are still filling in.
           </p>
+          <Overview
+            metric="Clicks"
+            stats={[
+              { label: 'Sites', value: String(sites.length) },
+              { label: 'Clicks', value: formatNumber(clicks) },
+              { label: 'Impressions', value: formatNumber(impressions) },
+              { label: 'CTR', value: percent(impressions > 0 ? clicks / impressions : 0) },
+              {
+                label: 'Avg. position',
+                value: position(
+                  weightedMean(
+                    ok.map((s) => s.totals.position),
+                    ok.map((s) => s.totals.impressions),
+                  ),
+                ),
+              },
+            ]}
+            daily={sumByDay(ok.map((s) => s.daily.map((d) => ({ day: d.day, value: d.clicks }))))}
+          />
           <div className="mb-6 overflow-x-auto">
             <table className="w-full min-w-[640px] text-sm" data-testid="search-sites">
               <thead>

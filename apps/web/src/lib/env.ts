@@ -23,7 +23,7 @@ export interface Env {
   ingestSecret?: string
   revalidateSecret?: string
   cookieDomain?: string
-  /** A Google service account that can read Search Console and Analytics, for the /search-console and /google-analytics pages. */
+  /** A Google service account that can read Search Console and Analytics, for the /dashboard/search-console and /dashboard/google-analytics pages. */
   googleServiceAccount?: { clientEmail: string; privateKey: string }
   debug: boolean
 }

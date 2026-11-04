@@ -3,8 +3,16 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Shell } from '@/components/shell'
 import { type AnalyticsRow, loadAnalytics } from '@/features/analytics/data'
-import { GOOGLE_RANGES } from '@/features/google/ranges'
-import { one, percent, RangeNav, RankedTable, rangeParam, shortDay } from '@/features/google/ui'
+import { GOOGLE_RANGES, sumByDay, weightedMean } from '@/features/google/ranges'
+import {
+  Overview,
+  one,
+  percent,
+  RangeNav,
+  RankedTable,
+  rangeParam,
+  shortDay,
+} from '@/features/google/ui'
 import { cachedProjects } from '@/features/projects/queries'
 import { requireUser } from '@/lib/auth'
 
@@ -41,7 +49,7 @@ function Rows({
 
 export default async function GoogleAnalyticsPage({
   searchParams,
-}: PageProps<'/google-analytics'>) {
+}: PageProps<'/dashboard/google-analytics'>) {
   const user = await requireUser()
   const search = await searchParams
   const range = rangeParam(search.range)
@@ -49,13 +57,22 @@ export default async function GoogleAnalyticsPage({
   const data = await loadAnalytics(projects, GOOGLE_RANGES[range])
   const reports = [...(data?.properties ?? [])].sort((a, b) => b.totals.users - a.totals.users)
   const selected = reports.find((r) => r.property.host === one(search.site)) ?? reports[0]
+  const ok = reports.filter((r) => !r.error)
+  const sum = (pick: (t: (typeof ok)[number]['totals']) => number) =>
+    ok.reduce((n, r) => n + pick(r.totals), 0)
+  const sessions = sum((t) => t.sessions)
+  const bySessions = (pick: (t: (typeof ok)[number]['totals']) => number) =>
+    weightedMean(
+      ok.map((r) => pick(r.totals)),
+      ok.map((r) => r.totals.sessions),
+    )
   const href = (params: { range?: string; site?: string }) => {
     const query = new URLSearchParams({
       range,
       ...(selected ? { site: selected.property.host } : {}),
     })
     for (const [key, value] of Object.entries(params)) if (value) query.set(key, value)
-    return `/google-analytics?${query}`
+    return `/dashboard/google-analytics?${query}`
   }
 
   return (
@@ -84,6 +101,17 @@ export default async function GoogleAnalyticsPage({
           <p className="mb-3 text-sm text-muted">
             Google Analytics from {shortDay(data.window.from)} to {shortDay(data.window.to)}.
           </p>
+          <Overview
+            metric="Users"
+            stats={[
+              { label: 'Users', value: formatNumber(sum((t) => t.users)) },
+              { label: 'Sessions', value: formatNumber(sessions) },
+              { label: 'Views', value: formatNumber(sum((t) => t.views)) },
+              { label: 'Engaged', value: percent(bySessions((t) => t.engagementRate)) },
+              { label: 'Avg. session', value: duration(bySessions((t) => t.sessionDuration)) },
+            ]}
+            daily={sumByDay(ok.map((r) => r.daily.map((d) => ({ day: d.day, value: d.users }))))}
+          />
           <div className="mb-6 overflow-x-auto">
             <table className="w-full min-w-[720px] text-sm" data-testid="analytics-properties">
               <thead>

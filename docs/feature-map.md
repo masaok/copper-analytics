@@ -7,8 +7,9 @@ One row per user-facing surface. `pnpm check:features` fails when a route in cod
 | `web:/` | Sign-in; signed-in users go to `/dashboard` | `apps/web/src/app/page.tsx` | `curl -s localhost:3000/` |
 | `web:/docs` | Public docs: install, proxy, opt-out, API, self-hosting | `apps/web/src/app/docs/page.tsx` | `curl -s localhost:3000/docs` |
 | `web:/dashboard` | All projects: totals, then one row per project (domain, project name, live, today vs yesterday, 30-day sparkline) | `apps/web/src/app/dashboard/page.tsx`, `features/stats/data.ts` (`loadOverview`) | Sign in, open `/dashboard` |
-| `web:/search-console` | Google Search Console clicks, impressions, CTR and position for the properties that match the user's project domains; top queries and pages for one | `apps/web/src/app/search-console/page.tsx`, `features/search-console/data.ts` (`loadSearchConsole`) | Set `GOOGLE_SERVICE_ACCOUNT_JSON`, sign in, open `/search-console?range=28d` |
-| `web:/google-analytics` | Google Analytics users, sessions, views, engagement and session length for the properties whose web stream is on one of the user's project domains; top pages and sources for one | `apps/web/src/app/google-analytics/page.tsx`, `features/analytics/data.ts` (`loadAnalytics`) | Set `GOOGLE_SERVICE_ACCOUNT_JSON`, sign in, open `/google-analytics?range=28d` |
+| `web:/dashboard/docs` | The docs inside the signed-in dashboard, the sidebar's Docs item. `/docs` stays public | `apps/web/src/app/dashboard/docs/page.tsx` (renders `app/docs/page.tsx`) | Sign in, open `/dashboard/docs` |
+| `web:/dashboard/search-console` | Google Search Console: an all-sites total and daily clicks chart first, then clicks, impressions, CTR and position for the properties that match the user's project domains; top queries and pages for one | `apps/web/src/app/dashboard/search-console/page.tsx`, `features/search-console/data.ts` (`loadSearchConsole`) | Set `GOOGLE_SERVICE_ACCOUNT_JSON`, sign in, open `/dashboard/search-console?range=28d` |
+| `web:/dashboard/google-analytics` | Google Analytics: an all-properties total and daily users chart first, then users, sessions, views, engagement and session length for the properties whose web stream is on one of the user's project domains; top pages and sources for one | `apps/web/src/app/dashboard/google-analytics/page.tsx`, `features/analytics/data.ts` (`loadAnalytics`) | Set `GOOGLE_SERVICE_ACCOUNT_JSON`, sign in, open `/dashboard/google-analytics?range=28d` |
 | `web:/new` | Create a project | `apps/web/src/app/new/page.tsx`, `features/projects/actions.ts` (`createProject`) | Sign in, open `/new`, submit the form |
 | `web:/p/[siteKey]` | Project report: range picker, KPI cards, chart, breakdown panels, live count | `apps/web/src/app/p/[siteKey]/page.tsx`, `features/stats/report.tsx`, `features/stats/data.ts` (`loadReport`) | Sign in, open `/p/demoshop01?range=7d&metric=pageviews` |
 | `web:/share/[siteKey]` | The same report, read-only, only while sharing is on | `apps/web/src/app/share/[siteKey]/page.tsx` | Turn sharing on in settings, open `/share/<key>` signed out |
@@ -28,6 +29,8 @@ One row per user-facing surface. `pnpm check:features` fails when a route in cod
 | `ingest:/invalidate` | Drops a cached project config after it changes | `packages/core/src/directory.ts` | `curl -s -X POST -H 'Authorization: Bearer dev-ingest-secret' 'localhost:8787/invalidate?site=devsite001'` |
 | `ingest:/flush` | Runs the hourly flush now; `?daily` adds retention and rollups | `apps/ingest/src/app.ts` (`runFlush`) | `curl -s -X POST -H 'Authorization: Bearer dev-ingest-secret' localhost:8787/flush` |
 | `ingest:/health` | Liveness | `apps/ingest/src/app.ts` | `curl -s localhost:8787/health` |
+
+`/search-console` and `/google-analytics` redirect to their `/dashboard` paths (`apps/web/next.config.ts`).
 
 ## Driving the app locally
 
