@@ -53,6 +53,8 @@ function createAuth() {
                   scopes: ['profile', 'email'],
                   // Lets sign-in finish on another host that proxies /api/auth, such as the marketing site.
                   redirectURI: config.justauth.redirectURI,
+                  // JustAuth's userinfo names the user `sub`, not `id`, without being an OIDC provider.
+                  accountSubject: ({ profile }) => String(profile.sub),
                   // JustAuth only returns an email it has verified with GitHub or Google.
                   mapProfileToUser: (profile) => ({ emailVerified: Boolean(profile.email) }),
                 },
