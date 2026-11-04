@@ -40,8 +40,8 @@ function countryName(code: string): string {
 
 function Panel({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="border-t border-line pt-5">
-      <h2 className="mb-3 font-medium">{title}</h2>
+    <section className="border-t border-line pt-3">
+      <h2 className="mb-2 font-medium">{title}</h2>
       {children}
     </section>
   )
@@ -82,7 +82,7 @@ export function ProjectReport({
   const multiDay = range.grain !== 'hour' || range.id === '24h'
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold tracking-tight">{project.name}</h1>
@@ -141,7 +141,7 @@ export function ProjectReport({
         ) : null}
       </nav>
 
-      <div className="grid grid-cols-2 gap-x-6 gap-y-5 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
         {METRICS.map((m) => {
           const now = metricValue(m.id, totals)
           const before = metricValue(m.id, previous)
@@ -157,10 +157,10 @@ export function ProjectReport({
               href={href({ metric: m.id })}
               aria-current={m.id === metric ? 'true' : undefined}
               data-testid={`kpi-${m.id}`}
-              className={`border-t-2 pt-3 ${m.id === metric ? 'border-copper' : 'border-line hover:border-muted'}`}
+              className={`border-t-2 pt-2 ${m.id === metric ? 'border-copper' : 'border-line hover:border-muted'}`}
             >
               <div className="text-sm text-muted">{m.label}</div>
-              <div className="tabular text-3xl font-semibold tracking-tight">
+              <div className="tabular text-2xl font-semibold tracking-tight">
                 {formatNumber(now)}
                 {m.id === 'bounce' ? '%' : ''}
               </div>
@@ -175,13 +175,13 @@ export function ProjectReport({
           )
         })}
       </div>
-      <p className="-mt-5 text-sm text-muted">
+      <p className="-mt-3 text-sm text-muted">
         Changes are {COMPARED_WITH[range.id]}.
         {multiDay ? ' Visitors over several days are the sum of each day’s unique visitors.' : ''}
       </p>
 
       <section aria-label={`${selected.label} over time`}>
-        <h2 className="mb-3 font-medium">{selected.label}</h2>
+        <h2 className="mb-2 font-medium">{selected.label}</h2>
         <TimeSeriesChart
           points={points}
           metric={selected.label}
@@ -189,7 +189,7 @@ export function ProjectReport({
         />
       </section>
 
-      <div className="grid gap-x-10 gap-y-8 md:grid-cols-2">
+      <div className="grid gap-x-8 gap-y-5 md:grid-cols-2 xl:grid-cols-3">
         <Panel title="Top pages">
           <BreakdownList rows={rows('page')} keyLabel="Page" />
         </Panel>
