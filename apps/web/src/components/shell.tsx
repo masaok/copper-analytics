@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import type { SessionUser } from '@/lib/auth'
+import { env } from '@/lib/env'
 import { SidebarNav } from './sidebar-nav'
 import { SignOutButton } from './sign-out'
 import { Wordmark } from './ui'
@@ -45,7 +46,10 @@ export async function Shell({
             <SignOutButton />
           </span>
         </div>
-        <SidebarNav className="max-md:hidden md:min-h-0 md:flex-1 md:overflow-y-auto" />
+        <SidebarNav
+          className="max-md:hidden md:min-h-0 md:flex-1 md:overflow-y-auto"
+          searchConsole={Boolean(env().searchConsole)}
+        />
         <div className="flex items-center gap-2.5 border-t border-line px-3 py-2.5 max-md:hidden">
           {user.image ? (
             // biome-ignore lint/performance/noImgElement: a remote avatar, not worth an image loader
