@@ -63,7 +63,7 @@ export default async function Dashboard({ searchParams }: PageProps<'/dashboard'
                         byName ? 'text-ink underline underline-offset-4' : 'hover:text-ink'
                       }
                     >
-                      Project
+                      Repository
                     </Link>
                   </th>
                   <th className="pb-2 text-right font-normal">Now</th>
