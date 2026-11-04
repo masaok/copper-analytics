@@ -23,8 +23,8 @@ export interface Env {
   ingestSecret?: string
   revalidateSecret?: string
   cookieDomain?: string
-  /** A Google service account that can read Search Console, for the /search-console page. */
-  searchConsole?: { clientEmail: string; privateKey: string }
+  /** A Google service account that can read Search Console and Analytics, for the /search-console and /google-analytics pages. */
+  googleServiceAccount?: { clientEmail: string; privateKey: string }
   debug: boolean
 }
 
@@ -68,7 +68,7 @@ export function readEnv(source: Record<string, string | undefined>): Env {
   if (mode === 'edge' && !(source.INGEST_URL && source.INGEST_SECRET)) {
     problems.push('INGEST_URL and INGEST_SECRET: required when COPPER_MODE=edge')
   }
-  const searchConsole = serviceAccount(source.GOOGLE_SERVICE_ACCOUNT_JSON, problems)
+  const googleServiceAccount = serviceAccount(source.GOOGLE_SERVICE_ACCOUNT_JSON, problems)
   if (problems.length > 0) {
     throw new Error(
       `Missing configuration:\n  ${problems.join('\n  ')}\nSee .env.example and docs/SELF_HOSTING.md.`,
@@ -91,7 +91,7 @@ export function readEnv(source: Record<string, string | undefined>): Env {
     ingestSecret: source.INGEST_SECRET,
     revalidateSecret: source.REVALIDATE_SECRET,
     cookieDomain: source.COOKIE_DOMAIN,
-    searchConsole,
+    googleServiceAccount,
     debug: source.COPPER_DEBUG === '1',
   }
 }
