@@ -6,7 +6,7 @@ One row per user-facing surface. `pnpm check:features` fails when a route in cod
 | --- | --- | --- | --- |
 | `web:/` | Sign-in; signed-in users go to `/dashboard` | `apps/web/src/app/page.tsx` | `curl -s localhost:3000/` |
 | `web:/docs` | Public docs: install, proxy, opt-out, API, self-hosting | `apps/web/src/app/docs/page.tsx` | `curl -s localhost:3000/docs` |
-| `web:/dashboard` | All projects: totals, live, today vs yesterday, 30-day sparkline | `apps/web/src/app/dashboard/page.tsx`, `features/stats/data.ts` (`loadOverview`) | Sign in, open `/dashboard` |
+| `web:/dashboard` | All projects: totals, then one row per project (domain, project name, live, today vs yesterday, 30-day sparkline) | `apps/web/src/app/dashboard/page.tsx`, `features/stats/data.ts` (`loadOverview`) | Sign in, open `/dashboard` |
 | `web:/new` | Create a project | `apps/web/src/app/new/page.tsx`, `features/projects/actions.ts` (`createProject`) | Sign in, open `/new`, submit the form |
 | `web:/p/[siteKey]` | Project report: range picker, KPI cards, chart, breakdown panels, live count | `apps/web/src/app/p/[siteKey]/page.tsx`, `features/stats/report.tsx`, `features/stats/data.ts` (`loadReport`) | Sign in, open `/p/demoshop01?range=7d&metric=pageviews` |
 | `web:/share/[siteKey]` | The same report, read-only, only while sharing is on | `apps/web/src/app/share/[siteKey]/page.tsx` | Turn sharing on in settings, open `/share/<key>` signed out |
