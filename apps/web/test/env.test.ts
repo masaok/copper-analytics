@@ -25,6 +25,24 @@ describe('readEnv', () => {
     })
   })
 
+  it('accepts JustAuth as the only sign-in, with a redirect on another host', () => {
+    const config = readEnv({
+      ...base,
+      JUSTAUTH_CLIENT_ID: 'ja_1',
+      JUSTAUTH_CLIENT_SECRET: 'jas_1',
+      JUSTAUTH_REDIRECT_URI: 'https://www.example.com/api/auth/callback/justauth',
+      TRUSTED_ORIGINS: 'https://www.example.com/, https://example.com',
+    })
+    expect(config.justauth).toEqual({
+      clientId: 'ja_1',
+      clientSecret: 'jas_1',
+      url: 'https://www.justauth.org',
+      redirectURI: 'https://www.example.com/api/auth/callback/justauth',
+    })
+    expect(config.trustedOrigins).toEqual(['https://www.example.com', 'https://example.com'])
+    expect(readEnv({ ...base, COPPER_DEMO_LOGIN: '1' }).trustedOrigins).toEqual([])
+  })
+
   it('requires the ingest settings in edge mode and defaults to simple mode', () => {
     const signIn = { ...base, COPPER_DEMO_LOGIN: '1' }
     expect(readEnv(signIn).mode).toBe('simple')

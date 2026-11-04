@@ -30,6 +30,18 @@ COPPER_SEED=0
 
 The GitHub OAuth app's callback URL is `<BETTER_AUTH_URL>/api/auth/callback/github`.
 
+To sign in with [JustAuth](https://justauth.org) instead of, or as well as, GitHub, create an app there with the redirect URI `<BETTER_AUTH_URL>/api/auth/callback/justauth` and set `JUSTAUTH_CLIENT_ID` and `JUSTAUTH_CLIENT_SECRET`.
+
+### Signing in from another site
+
+Another site on the same parent domain, such as a marketing site at `www.example.com`, can run the whole sign-in without sending people to the dashboard's host first:
+
+1. On that site, rewrite `/api/auth/:path*` to `<BETTER_AUTH_URL>/api/auth/:path*`.
+2. On the dashboard, set `COOKIE_DOMAIN=.example.com`, `TRUSTED_ORIGINS=https://www.example.com` and `JUSTAUTH_REDIRECT_URI=https://www.example.com/api/auth/callback/justauth`, and add that redirect URI to the JustAuth app.
+3. On that site, `POST /api/auth/sign-in/social` with `{"provider":"justauth","callbackURL":"<BETTER_AUTH_URL>/dashboard"}` and send the browser to the `url` in the response.
+
+JustAuth returns to the other site, the dashboard sets the session cookie on the parent domain, and the browser lands on the dashboard signed in.
+
 ## Quickstart: Node
 
 ```bash

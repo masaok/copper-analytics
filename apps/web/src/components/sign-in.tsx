@@ -5,7 +5,11 @@ import { useState } from 'react'
 import { authClient } from '@/lib/auth-client'
 import { Button, Field, inputClass } from './ui'
 
-const LABELS = { github: 'Sign in with GitHub', google: 'Sign in with Google' } as const
+const LABELS = {
+  justauth: 'Sign in with JustAuth',
+  github: 'Sign in with GitHub',
+  google: 'Sign in with Google',
+} as const
 export type Provider = keyof typeof LABELS
 
 export function SignIn({ providers, demo }: { providers: Provider[]; demo: boolean }) {
