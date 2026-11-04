@@ -29,7 +29,7 @@ export default async function Dashboard({ searchParams }: PageProps<'/dashboard'
 
   return (
     <Shell user={user}>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-semibold tracking-tight">All projects</h1>
         <Link href="/new" className={buttonClass()}>
           Add a project
@@ -40,11 +40,11 @@ export default async function Dashboard({ searchParams }: PageProps<'/dashboard'
         <p className="text-sm text-muted">No projects yet. Add one to get its tracking snippet.</p>
       ) : (
         <>
-          <dl className="mb-8 grid grid-cols-2 gap-x-6 gap-y-4 border-y border-line py-5 sm:grid-cols-4">
+          <dl className="mb-4 grid grid-cols-2 gap-x-6 gap-y-3 border-y border-line py-3 sm:grid-cols-4">
             {totals.map((t) => (
               <div key={t.label}>
                 <dt className="text-sm text-muted">{t.label}</dt>
-                <dd className="tabular text-2xl font-semibold tracking-tight">
+                <dd className="tabular text-xl font-semibold tracking-tight">
                   {formatNumber(t.value)}
                 </dd>
               </div>
@@ -84,16 +84,18 @@ export default async function Dashboard({ searchParams }: PageProps<'/dashboard'
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.project.siteKey} className="border-t border-line">
-                    <td className="py-3 pr-4">
+                    <td className="py-1.5 pr-4">
                       <Link
                         href={`/p/${row.project.siteKey}`}
                         className="font-medium hover:underline"
                       >
                         {row.project.name}
                       </Link>
-                      <div className="text-muted">{row.project.domains[0] ?? 'Any domain'}</div>
+                      <span className="ml-2 text-xs text-muted">
+                        {row.project.domains[0] ?? 'Any domain'}
+                      </span>
                     </td>
-                    <td className="tabular py-3 text-right">
+                    <td className="tabular py-1.5 text-right">
                       <span className="inline-flex items-center gap-1.5">
                         <span
                           aria-hidden
@@ -102,19 +104,19 @@ export default async function Dashboard({ searchParams }: PageProps<'/dashboard'
                         {row.live}
                       </span>
                     </td>
-                    <td className="tabular py-3 text-right font-medium">
+                    <td className="tabular py-1.5 text-right font-medium">
                       {formatNumber(row.todayVisitors)}
                     </td>
-                    <td className="py-3 pl-4">
+                    <td className="py-1.5 pl-4">
                       <Delta value={percentChange(row.todayVisitors, row.yesterdayVisitors)} />
                     </td>
-                    <td className="py-2">
+                    <td className="py-1">
                       <Sparkline
                         values={row.trend}
                         label={`Daily visitors over 30 days for ${row.project.name}`}
                       />
                     </td>
-                    <td className="tabular py-3 text-right">{formatNumber(row.pageviews30d)}</td>
+                    <td className="tabular py-1.5 text-right">{formatNumber(row.pageviews30d)}</td>
                   </tr>
                 ))}
               </tbody>

@@ -45,7 +45,7 @@ export default async function Docs() {
   const host = env().BETTER_AUTH_URL
   return (
     <Shell user={user}>
-      <div className="mx-auto flex max-w-2xl flex-col gap-8 text-[15px] leading-relaxed">
+      <div className="flex flex-col gap-8 text-[15px] leading-relaxed">
         <div className="flex flex-col gap-3">
           <h1 className="text-2xl font-semibold tracking-tight">Docs</h1>
           <p className="text-muted">

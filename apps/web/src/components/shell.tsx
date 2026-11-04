@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
-import { cachedProjects } from '@/features/projects/queries'
 import type { SessionUser } from '@/lib/auth'
 import { SidebarNav } from './sidebar-nav'
 import { SignOutButton } from './sign-out'
@@ -21,7 +20,7 @@ export async function Shell({
     return (
       <>
         <header className="border-b border-line">
-          <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-5">
+          <div className="flex h-12 w-full items-center justify-between px-4 md:px-6">
             <Link href="/" aria-label="Copper Analytics home">
               <Wordmark />
             </Link>
@@ -30,16 +29,15 @@ export async function Shell({
             </Link>
           </div>
         </header>
-        <main className="mx-auto w-full max-w-6xl flex-1 px-5 py-8">{children}</main>
+        <main className="w-full flex-1 px-4 py-5 md:px-6">{children}</main>
       </>
     )
   }
 
-  const projects = await cachedProjects(user.id)
   return (
     <div className="flex flex-col md:h-dvh md:flex-row md:overflow-hidden">
-      <aside className="flex shrink-0 flex-col border-line bg-surface max-md:border-b md:w-64 md:border-r">
-        <div className="flex h-14 items-center justify-between px-4">
+      <aside className="flex shrink-0 flex-col border-line bg-surface max-md:border-b md:w-52 md:border-r">
+        <div className="flex h-12 items-center justify-between px-4">
           <Link href="/dashboard" aria-label="Copper Analytics home">
             <Wordmark />
           </Link>
@@ -47,11 +45,8 @@ export async function Shell({
             <SignOutButton />
           </span>
         </div>
-        <SidebarNav
-          projects={projects.map(({ siteKey, name }) => ({ siteKey, name }))}
-          className="max-md:hidden md:min-h-0 md:flex-1 md:overflow-y-auto"
-        />
-        <div className="flex items-center gap-3 border-t border-line px-4 py-3 max-md:hidden">
+        <SidebarNav className="max-md:hidden md:min-h-0 md:flex-1 md:overflow-y-auto" />
+        <div className="flex items-center gap-2.5 border-t border-line px-3 py-2.5 max-md:hidden">
           {user.image ? (
             // biome-ignore lint/performance/noImgElement: a remote avatar, not worth an image loader
             <img src={user.image} alt="" className="size-7 shrink-0 rounded-full" />
@@ -64,7 +59,7 @@ export async function Shell({
         </div>
       </aside>
       <main className="min-w-0 flex-1 md:overflow-y-auto">
-        <div className="mx-auto w-full max-w-6xl px-5 py-8 md:px-8">{children}</div>
+        <div className="w-full px-4 py-5 md:px-6">{children}</div>
       </main>
     </div>
   )

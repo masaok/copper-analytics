@@ -19,7 +19,7 @@ export default async function ProjectPage({ params, searchParams }: PageProps<'/
   const report = await loadReport(project, range, custom)
   return (
     <Shell user={user}>
-      <p className="mb-4 flex gap-4 text-sm text-muted">
+      <p className="mb-3 flex gap-4 text-sm text-muted">
         <Link href="/dashboard" className="hover:underline">
           All projects
         </Link>
