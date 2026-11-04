@@ -24,3 +24,20 @@ export function daysBetween(from: string, to: string): string[] {
   for (let t = Date.parse(from); t <= Date.parse(to); t += 86_400_000) out.push(isoDay(t))
   return out
 }
+
+/** Day-by-day sums of several series, for the all-sites chart. Days are ordered as they first appear. */
+export function sumByDay(
+  series: { day: string; value: number }[][],
+): { day: string; value: number }[] {
+  const totals = new Map<string, number>()
+  for (const points of series) {
+    for (const { day, value } of points) totals.set(day, (totals.get(day) ?? 0) + value)
+  }
+  return [...totals].map(([day, value]) => ({ day, value }))
+}
+
+/** The average of `values`, weighted by `weights`; 0 when there is no weight. */
+export function weightedMean(values: number[], weights: number[]): number {
+  const total = weights.reduce((n, w) => n + w, 0)
+  return total > 0 ? values.reduce((n, v, i) => n + v * (weights[i] ?? 0), 0) / total : 0
+}

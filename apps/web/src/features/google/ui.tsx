@@ -1,3 +1,4 @@
+import { TimeSeriesChart } from '@copper/ui'
 import Link from 'next/link'
 import { GOOGLE_RANGES, type GoogleRangeId, isGoogleRangeId } from './ranges'
 
@@ -101,5 +102,37 @@ export function RankedTable({
         ))}
       </tbody>
     </table>
+  )
+}
+
+/** The page's first block: totals across every site, then one chart of the summed daily series. */
+export function Overview({
+  stats,
+  metric,
+  daily,
+}: {
+  stats: { label: string; value: string }[]
+  metric: string
+  daily: { day: string; value: number }[]
+}) {
+  return (
+    <section aria-label="All sites" className="mb-6">
+      <dl className="mb-4 grid grid-cols-2 gap-x-6 gap-y-3 border-y border-line py-3 sm:grid-cols-5">
+        {stats.map((s) => (
+          <div key={s.label}>
+            <dt className="text-sm text-muted">{s.label}</dt>
+            <dd className="tabular text-xl font-semibold tracking-tight">{s.value}</dd>
+          </div>
+        ))}
+      </dl>
+      <TimeSeriesChart
+        metric={metric}
+        points={daily.map((d) => ({
+          label: shortDay(d.day),
+          title: shortDay(d.day),
+          value: d.value,
+        }))}
+      />
+    </section>
   )
 }

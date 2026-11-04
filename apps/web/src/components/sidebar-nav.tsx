@@ -31,8 +31,8 @@ export function SidebarNav({
       {google
         ? (
             [
-              ['/search-console', 'Google Search Console'],
-              ['/google-analytics', 'Google Analytics'],
+              ['/dashboard/search-console', 'Google Search Console'],
+              ['/dashboard/google-analytics', 'Google Analytics'],
             ] as const
           ).map(([href, label]) => (
             <Link
@@ -46,7 +46,11 @@ export function SidebarNav({
           ))
         : null}
       <div className="my-2 border-t border-line" />
-      <Link href="/docs" className={item(path === '/docs')}>
+      <Link
+        href="/dashboard/docs"
+        className={item(path === '/dashboard/docs')}
+        aria-current={path === '/dashboard/docs' ? 'page' : undefined}
+      >
         Docs
       </Link>
     </nav>
