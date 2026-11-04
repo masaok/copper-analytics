@@ -55,4 +55,17 @@ describe('readEnv', () => {
       BETTER_AUTH_URL: 'http://localhost:3000',
     })
   })
+
+  it('reads a Search Console service account key, and names a bad one', () => {
+    const signIn = { ...base, COPPER_DEMO_LOGIN: '1' }
+    expect(readEnv(signIn).searchConsole).toBeUndefined()
+    const key = JSON.stringify({ client_email: 'a@b.iam', private_key: '-----KEY-----\nabc\n' })
+    expect(readEnv({ ...signIn, GOOGLE_SERVICE_ACCOUNT_JSON: key }).searchConsole).toEqual({
+      clientEmail: 'a@b.iam',
+      privateKey: '-----KEY-----\nabc\n',
+    })
+    expect(() => readEnv({ ...signIn, GOOGLE_SERVICE_ACCOUNT_JSON: '{nope' })).toThrow(
+      /GOOGLE_SERVICE_ACCOUNT_JSON/,
+    )
+  })
 })

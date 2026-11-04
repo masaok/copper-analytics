@@ -23,11 +23,28 @@ export interface Env {
   ingestSecret?: string
   revalidateSecret?: string
   cookieDomain?: string
+  /** A Google service account that can read Search Console, for the /search-console page. */
+  searchConsole?: { clientEmail: string; privateKey: string }
   debug: boolean
 }
 
 const pair = (id?: string, secret?: string) =>
   id && secret ? { clientId: id, clientSecret: secret } : undefined
+
+/** The client email and private key from a service account's JSON key, the file Google downloads. */
+function serviceAccount(json: string | undefined, problems: string[]) {
+  if (!json) return undefined
+  try {
+    const key = JSON.parse(json) as { client_email?: unknown; private_key?: unknown }
+    if (typeof key.client_email === 'string' && typeof key.private_key === 'string') {
+      return { clientEmail: key.client_email, privateKey: key.private_key }
+    }
+  } catch {}
+  problems.push(
+    'GOOGLE_SERVICE_ACCOUNT_JSON: a service account JSON key with client_email and private_key',
+  )
+  return undefined
+}
 
 /** Reads and checks configuration once. A missing variable fails here, by name, not deep in a library. */
 export function readEnv(source: Record<string, string | undefined>): Env {
@@ -51,6 +68,7 @@ export function readEnv(source: Record<string, string | undefined>): Env {
   if (mode === 'edge' && !(source.INGEST_URL && source.INGEST_SECRET)) {
     problems.push('INGEST_URL and INGEST_SECRET: required when COPPER_MODE=edge')
   }
+  const searchConsole = serviceAccount(source.GOOGLE_SERVICE_ACCOUNT_JSON, problems)
   if (problems.length > 0) {
     throw new Error(
       `Missing configuration:\n  ${problems.join('\n  ')}\nSee .env.example and docs/SELF_HOSTING.md.`,
@@ -73,6 +91,7 @@ export function readEnv(source: Record<string, string | undefined>): Env {
     ingestSecret: source.INGEST_SECRET,
     revalidateSecret: source.REVALIDATE_SECRET,
     cookieDomain: source.COOKIE_DOMAIN,
+    searchConsole,
     debug: source.COPPER_DEBUG === '1',
   }
 }

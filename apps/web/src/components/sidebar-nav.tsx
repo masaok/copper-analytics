@@ -9,7 +9,14 @@ const item = (active: boolean) =>
   }`
 
 /** The pages around the signed-in user's projects. Projects are listed on /dashboard. */
-export function SidebarNav({ className = '' }: { className?: string }) {
+export function SidebarNav({
+  className = '',
+  searchConsole = false,
+}: {
+  className?: string
+  /** Shows the Google Search Console page, which needs a service account. */
+  searchConsole?: boolean
+}) {
   const path = usePathname()
   const inProjects = path === '/dashboard' || path.startsWith('/p/')
   return (
@@ -24,6 +31,15 @@ export function SidebarNav({ className = '' }: { className?: string }) {
       <Link href="/new" className={item(path === '/new')}>
         + Add a project
       </Link>
+      {searchConsole ? (
+        <Link
+          href="/search-console"
+          className={item(path === '/search-console')}
+          aria-current={path === '/search-console' ? 'page' : undefined}
+        >
+          Google Search Console
+        </Link>
+      ) : null}
       <div className="my-2 border-t border-line" />
       <Link href="/docs" className={item(path === '/docs')}>
         Docs
