@@ -28,9 +28,6 @@ export function SidebarNav({
       >
         All projects
       </Link>
-      <Link href="/new" className={item(path === '/new')}>
-        + Add a project
-      </Link>
       {searchConsole ? (
         <Link
           href="/search-console"
