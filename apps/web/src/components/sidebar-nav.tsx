@@ -11,11 +11,11 @@ const item = (active: boolean) =>
 /** The pages around the signed-in user's projects. Projects are listed on /dashboard. */
 export function SidebarNav({
   className = '',
-  searchConsole = false,
+  google = false,
 }: {
   className?: string
-  /** Shows the Google Search Console page, which needs a service account. */
-  searchConsole?: boolean
+  /** Shows the Google Search Console and Analytics pages, which need a service account. */
+  google?: boolean
 }) {
   const path = usePathname()
   const inProjects = path === '/dashboard' || path.startsWith('/p/')
@@ -28,15 +28,23 @@ export function SidebarNav({
       >
         All projects
       </Link>
-      {searchConsole ? (
-        <Link
-          href="/search-console"
-          className={item(path === '/search-console')}
-          aria-current={path === '/search-console' ? 'page' : undefined}
-        >
-          Google Search Console
-        </Link>
-      ) : null}
+      {google
+        ? (
+            [
+              ['/search-console', 'Google Search Console'],
+              ['/google-analytics', 'Google Analytics'],
+            ] as const
+          ).map(([href, label]) => (
+            <Link
+              key={href}
+              href={href}
+              className={item(path === href)}
+              aria-current={path === href ? 'page' : undefined}
+            >
+              {label}
+            </Link>
+          ))
+        : null}
       <div className="my-2 border-t border-line" />
       <Link href="/docs" className={item(path === '/docs')}>
         Docs

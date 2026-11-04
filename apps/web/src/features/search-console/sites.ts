@@ -1,10 +1,5 @@
-/** Pure helpers for the Search Console page: which properties a user may see, and which days. */
-
-export const SEARCH_RANGES = { '7d': 7, '28d': 28, '3m': 90 } as const
-export type SearchRangeId = keyof typeof SEARCH_RANGES
-
-export const isSearchRangeId = (value: unknown): value is SearchRangeId =>
-  typeof value === 'string' && Object.hasOwn(SEARCH_RANGES, value)
+/** Which Search Console properties a user may see. */
+import { bare } from '@/features/google/ranges'
 
 export interface MatchedSite {
   /** The property as Search Console names it: `sc-domain:example.com` or `https://www.example.com/`. */
@@ -13,8 +8,6 @@ export interface MatchedSite {
   host: string
   projectName: string
 }
-
-const bare = (host: string) => host.toLowerCase().replace(/^www\./, '')
 
 /** `sc-domain:example.com` and `https://www.example.com/` both become `example.com`. */
 export function propertyHost(siteUrl: string): string | null {
@@ -52,20 +45,4 @@ export function matchSites(
     byHost.set(host, { siteUrl, host, projectName: project.name })
   }
   return [...byHost.values()].sort((a, b) => a.host.localeCompare(b.host))
-}
-
-const isoDay = (ms: number) => new Date(ms).toISOString().slice(0, 10)
-
-/** The last `days` whole days, ending yesterday (UTC), as Search Console's YYYY-MM-DD dates. */
-export function searchWindow(days: number, now = Date.now()): { from: string; to: string } {
-  const day = 86_400_000
-  const yesterday = now - day
-  return { from: isoDay(yesterday - (days - 1) * day), to: isoDay(yesterday) }
-}
-
-/** Every day from `from` to `to`, inclusive, so days with no search traffic still plot as zero. */
-export function daysBetween(from: string, to: string): string[] {
-  const out: string[] = []
-  for (let t = Date.parse(from); t <= Date.parse(to); t += 86_400_000) out.push(isoDay(t))
-  return out
 }

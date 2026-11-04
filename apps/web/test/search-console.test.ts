@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import {
-  daysBetween,
-  isSearchRangeId,
-  matchSites,
-  propertyHost,
-  searchWindow,
-} from '../src/features/search-console/sites'
+import { daysBetween, isGoogleRangeId, searchWindow } from '../src/features/google/ranges'
+import { matchSites, propertyHost } from '../src/features/search-console/sites'
 
 const projects = [
   { name: 'Quick', domains: ['quickbankconvert.com'] },
@@ -57,7 +52,7 @@ describe('dates', () => {
   })
 
   it('accepts only known ranges', () => {
-    expect(isSearchRangeId('28d')).toBe(true)
-    expect(isSearchRangeId('toString')).toBe(false)
+    expect(isGoogleRangeId('28d')).toBe(true)
+    expect(isGoogleRangeId('toString')).toBe(false)
   })
 })

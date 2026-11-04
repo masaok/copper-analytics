@@ -1,12 +1,12 @@
 import 'server-only'
-import { createSign } from 'node:crypto'
 import { unstable_cache } from 'next/cache'
+import { googleApi, SCOPES } from '@/features/google/client'
+import { daysBetween, searchWindow } from '@/features/google/ranges'
 import type { ProjectSummary } from '@/features/projects/queries'
 import { env } from '@/lib/env'
-import { daysBetween, type MatchedSite, matchSites, searchWindow } from './sites'
+import { type MatchedSite, matchSites } from './sites'
 
 const API = 'https://www.googleapis.com/webmasters/v3'
-const TOKEN_URL = 'https://oauth2.googleapis.com/token'
 /** Search Console updates once or twice a day, so an hour-old answer is as good as a new one. */
 const LIFETIME = 3600
 
@@ -28,54 +28,8 @@ export interface SiteSearch {
   error?: string
 }
 
-let token: { value: string; expires: number } | undefined
-
-/** An access token from the service account's key (a signed JWT exchanged at Google), reused until it nearly expires. */
-async function accessToken(): Promise<string> {
-  if (token && token.expires > Date.now() + 60_000) return token.value
-  const account = env().searchConsole
-  if (!account) throw new Error('GOOGLE_SERVICE_ACCOUNT_JSON is not set')
-  const b64 = (o: object) => Buffer.from(JSON.stringify(o)).toString('base64url')
-  const now = Math.floor(Date.now() / 1000)
-  const unsigned = `${b64({ alg: 'RS256', typ: 'JWT' })}.${b64({
-    iss: account.clientEmail,
-    scope: 'https://www.googleapis.com/auth/webmasters.readonly',
-    aud: TOKEN_URL,
-    iat: now,
-    exp: now + 3600,
-  })}`
-  const signature = createSign('RSA-SHA256').update(unsigned).sign(account.privateKey, 'base64url')
-  const res = await fetch(TOKEN_URL, {
-    method: 'POST',
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-      assertion: `${unsigned}.${signature}`,
-    }),
-    cache: 'no-store',
-  })
-  const body = (await res.json()) as { access_token?: string; expires_in?: number; error?: string }
-  if (!body.access_token) throw new Error(`Google sign-in failed: ${body.error ?? res.status}`)
-  token = { value: body.access_token, expires: Date.now() + (body.expires_in ?? 3600) * 1000 }
-  return token.value
-}
-
-async function google<T>(path: string, body?: object): Promise<T> {
-  const res = await fetch(`${API}${path}`, {
-    method: body ? 'POST' : 'GET',
-    headers: {
-      authorization: `Bearer ${await accessToken()}`,
-      ...(body ? { 'content-type': 'application/json' } : {}),
-    },
-    body: body ? JSON.stringify(body) : undefined,
-    cache: 'no-store',
-  })
-  if (!res.ok) {
-    const detail = (await res.json().catch(() => null)) as { error?: { message?: string } } | null
-    throw new Error(detail?.error?.message ?? `Search Console answered ${res.status}`)
-  }
-  return (await res.json()) as T
-}
+const google = <T>(path: string, body?: object) =>
+  googleApi<T>(SCOPES.searchConsole, `${API}${path}`, body)
 
 /** Every property the service account has been added to. */
 const cachedSiteUrls = unstable_cache(
@@ -162,7 +116,7 @@ export async function loadSearchConsole(
   projects: ProjectSummary[],
   days: number,
 ): Promise<SearchConsole | null> {
-  if (!env().searchConsole) return null
+  if (!env().googleServiceAccount) return null
   const window = searchWindow(days)
   let siteUrls: string[]
   try {
