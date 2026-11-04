@@ -55,6 +55,7 @@ export default async function Dashboard({ searchParams }: PageProps<'/dashboard'
             <table className="w-full min-w-[640px] text-sm" data-testid="overview">
               <thead>
                 <tr className="text-left text-muted">
+                  <th className="pb-2 font-normal">Domain</th>
                   <th className="pb-2 font-normal">
                     <Link
                       href="/dashboard?sort=name"
@@ -89,12 +90,10 @@ export default async function Dashboard({ searchParams }: PageProps<'/dashboard'
                         href={`/p/${row.project.siteKey}`}
                         className="font-medium hover:underline"
                       >
-                        {row.project.name}
-                      </Link>
-                      <span className="ml-2 text-xs text-muted">
                         {row.project.domains[0] ?? 'Any domain'}
-                      </span>
+                      </Link>
                     </td>
+                    <td className="py-1.5 pr-4 text-muted">{row.project.name}</td>
                     <td className="tabular py-1.5 text-right">
                       <span className="inline-flex items-center gap-1.5">
                         <span
