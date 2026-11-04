@@ -8,6 +8,7 @@ export default async function Home() {
   if (await currentUser()) redirect('/dashboard')
   const config = env()
   const providers: Provider[] = [
+    ...(config.justauth ? (['justauth'] as const) : []),
     ...(config.github ? (['github'] as const) : []),
     ...(config.google ? (['google'] as const) : []),
   ]

@@ -3,6 +3,7 @@ import { schema } from '@copper/db'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { nextCookies } from 'better-auth/next-js'
+import { genericOAuth } from 'better-auth/plugins'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { db } from './db'
@@ -13,6 +14,7 @@ function createAuth() {
   return betterAuth({
     secret: config.BETTER_AUTH_SECRET,
     baseURL: config.BETTER_AUTH_URL,
+    trustedOrigins: config.trustedOrigins,
     database: drizzleAdapter(db(), { provider: 'pg', schema }),
     socialProviders: {
       ...(config.github ? { github: config.github } : {}),
@@ -36,7 +38,30 @@ function createAuth() {
     advanced: config.cookieDomain
       ? { crossSubDomainCookies: { enabled: true, domain: config.cookieDomain } }
       : undefined,
-    plugins: [nextCookies()],
+    plugins: [
+      ...(config.justauth
+        ? [
+            genericOAuth({
+              config: [
+                {
+                  providerId: 'justauth',
+                  clientId: config.justauth.clientId,
+                  clientSecret: config.justauth.clientSecret,
+                  authorizationUrl: `${config.justauth.url}/oauth/authorize`,
+                  tokenUrl: `${config.justauth.url}/oauth/token`,
+                  userInfoUrl: `${config.justauth.url}/oauth/userinfo`,
+                  scopes: ['profile', 'email'],
+                  // Lets sign-in finish on another host that proxies /api/auth, such as the marketing site.
+                  redirectURI: config.justauth.redirectURI,
+                  // JustAuth only returns an email it has verified with GitHub or Google.
+                  mapProfileToUser: (profile) => ({ emailVerified: Boolean(profile.email) }),
+                },
+              ],
+            }),
+          ]
+        : []),
+      nextCookies(),
+    ],
   })
 }
 

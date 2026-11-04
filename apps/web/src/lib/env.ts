@@ -12,6 +12,10 @@ export interface Env {
   BETTER_AUTH_URL: string
   github?: { clientId: string; clientSecret: string }
   google?: { clientId: string; clientSecret: string }
+  /** Sign in with JustAuth (https://justauth.org), a generic OAuth 2.0 provider. */
+  justauth?: { clientId: string; clientSecret: string; url: string; redirectURI?: string }
+  /** Other sites allowed to start sign-in here, e.g. a marketing site that proxies /api/auth. */
+  trustedOrigins: string[]
   /** Email and password sign-in for the seeded demo account. For local and self-host trials only. */
   demoLogin: boolean
   mode: 'simple' | 'edge'
@@ -30,12 +34,18 @@ export function readEnv(source: Record<string, string | undefined>): Env {
   const missing = Object.entries(REQUIRED).filter(([key]) => !source[key])
   const github = pair(source.GITHUB_CLIENT_ID, source.GITHUB_CLIENT_SECRET)
   const google = pair(source.GOOGLE_CLIENT_ID, source.GOOGLE_CLIENT_SECRET)
+  const justauthPair = pair(source.JUSTAUTH_CLIENT_ID, source.JUSTAUTH_CLIENT_SECRET)
+  const justauth = justauthPair && {
+    ...justauthPair,
+    url: (source.JUSTAUTH_URL ?? 'https://www.justauth.org').replace(/\/$/, ''),
+    redirectURI: source.JUSTAUTH_REDIRECT_URI || undefined,
+  }
   const demoLogin = source.COPPER_DEMO_LOGIN === '1'
   const mode = source.COPPER_MODE === 'edge' ? 'edge' : 'simple'
   const problems = missing.map(([key, what]) => `${key}: ${what}`)
-  if (!github && !google && !demoLogin) {
+  if (!github && !google && !justauth && !demoLogin) {
     problems.push(
-      'GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET: a GitHub OAuth app, or set COPPER_DEMO_LOGIN=1',
+      'GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET: a GitHub OAuth app, or JUSTAUTH_CLIENT_ID and JUSTAUTH_CLIENT_SECRET, or set COPPER_DEMO_LOGIN=1',
     )
   }
   if (mode === 'edge' && !(source.INGEST_URL && source.INGEST_SECRET)) {
@@ -52,6 +62,11 @@ export function readEnv(source: Record<string, string | undefined>): Env {
     BETTER_AUTH_URL: (source.BETTER_AUTH_URL as string).replace(/\/$/, ''),
     github,
     google,
+    justauth,
+    trustedOrigins: (source.TRUSTED_ORIGINS ?? '')
+      .split(',')
+      .map((origin) => origin.trim().replace(/\/$/, ''))
+      .filter(Boolean),
     demoLogin,
     mode,
     ingestUrl: source.INGEST_URL?.replace(/\/$/, ''),
