@@ -42,10 +42,27 @@ export function Field({
 export const inputClass =
   'w-full rounded-md border border-line bg-bg px-3 py-2 text-sm text-ink placeholder:text-muted'
 
+/** Same drawing as src/app/icon.svg, the favicon. */
+export function LogoMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" aria-hidden className={className}>
+      <rect width="32" height="32" rx="7" fill="#a8521f" />
+      <path
+        d="M22.2 9.8A8.6 8.6 0 1 0 22.2 22.2"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="4.2"
+        strokeLinecap="round"
+      />
+      <circle cx="23" cy="16" r="2.4" fill="#7fd6bf" />
+    </svg>
+  )
+}
+
 export function Wordmark() {
   return (
     <span className="inline-flex items-center gap-2 font-semibold tracking-tight">
-      <span aria-hidden className="size-3 rounded-full bg-copper ring-2 ring-patina/50" />
+      <LogoMark className="size-6" />
       Copper
     </span>
   )
