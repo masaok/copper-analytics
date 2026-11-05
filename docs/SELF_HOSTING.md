@@ -62,7 +62,7 @@ Simple mode buffers pageviews in the process's memory. A serverless platform run
 
 ## Edge mode
 
-1. Create a Neon project and run `DATABASE_URL=<pooled string> pnpm --filter @copper/db migrate`.
+1. Create a Neon project and apply the migrations, as [Migrations](#migrations) describes. The pooled string works.
 2. In `apps/ingest`, run `wrangler login`, then set the secrets:
 
    ```bash
@@ -75,6 +75,17 @@ Simple mode buffers pageviews in the process's memory. A serverless platform run
 4. On the web app, set `COPPER_MODE=edge`, `INGEST_URL` (the Worker's URL), and the same `INGEST_SECRET` and `REVALIDATE_SECRET`.
 
 A KV namespace bound as `PROJECTS` keeps project settings out of the database's way. Without it, each Worker isolate asks the database once every five minutes per active project, which keeps Neon awake.
+
+## Migrations
+
+Pending migrations apply on their own in two places:
+
+- The Docker image's entry point, `scripts/start.sh`, runs them before it starts the server.
+- A Vercel production build runs them before `next build` (`scripts/vercel-build.mjs`, the build command in `apps/web/vercel.json`). Preview builds never do. A failed migration fails the build, so the previous deployment keeps serving. To re-run them, redeploy production.
+
+Anywhere else, run `DATABASE_URL=... pnpm --filter @copper/db migrate` before you start the new code. It applies only what is pending and is safe to run twice or from two machines at once.
+
+The old code keeps serving while the new schema goes in, so every migration must work with the code before it. Add columns and tables in one release and drop or rename them in a later one, after no deployed code reads them. A new `not null` column needs a default.
 
 ## Configuration
 

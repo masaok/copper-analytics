@@ -12,6 +12,7 @@ Each rule and the thing that enforces it. A rule with nothing in the right-hand 
 | Only `packages/db` opens database connections | Biome `noRestrictedImports` on `pg` and `@neondatabase/serverless` |
 | Migrations apply from empty and match the schema | `migrations` CI job (Postgres service) and `packages/db/test/migrate.test.ts` |
 | Concurrent migration runs do not interleave | Transaction-level advisory lock in `packages/db/src/migrate.ts` |
+| Production migrations apply on every production deploy, and only there | `scripts/vercel-build.mjs` is the build command in `apps/web/vercel.json`; `scripts/test/vercel-build.test.mjs` covers production, preview and local builds |
 | A flush is never counted twice | `flush_log` primary key; `packages/db/test/store.test.ts` |
 | Every route has a feature-map row | `pnpm check:features` in the `docs` CI job |
 | Markdown links and anchors resolve | `pnpm check:docs` in the `docs` CI job |
@@ -46,4 +47,5 @@ Practices from the [engineering practices guide](https://www.expeditionlabs.co/r
 | Port and resource registry | No port is assigned by hand. `dev:db` takes `PORT` and Next picks a free port itself. | Two working copies routinely run at once |
 | Canonical class ordering | Biome's `useSortedClasses` is still a nursery rule. | It is promoted to a stable group |
 | Blame-ignore file | Biome has formatted the code since the first commit, so there is no mass reformat to hide. | A formatter or config change rewrites many files |
+| Expand/contract check on migrations | A migration that drops or renames is rare, and the rule in `AGENTS.md` and [Migrations](SELF_HOSTING.md#migrations) is reviewed by hand. | A destructive migration breaks a running deployment |
 | Language-neutral migration runner per runtime | TypeScript is the only runtime that writes the schema. The migrations are already plain SQL files. | A second language writes to the database |
