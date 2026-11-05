@@ -1,4 +1,4 @@
-import { bare } from '@/features/google/ranges'
+import { bare, covers } from '@/features/google/ranges'
 
 const API_URL = 'https://api.namecheap.com/xml.response'
 /** Namecheap's largest page. */
@@ -149,12 +149,18 @@ export interface DomainRow<P> extends NamecheapDomain {
   expiry: Expiry
   /** The Copper projects tracking this domain or one of its subdomains. */
   projects: P[]
+  /** The stored GitHub `owner/name`, or null when none is stored. */
+  repository: string | null
 }
 
-/** Joins the domains to the projects on them and marks the ones expired or about to expire. */
+/**
+ * Joins the domains to the projects on them and to their stored repositories, and marks the ones
+ * expired or about to expire.
+ */
 export function domainRows<P extends { domains: string[] }>(
   domains: NamecheapDomain[],
   projects: P[],
+  repositories: Map<string, string>,
   now = new Date(),
 ): DomainRow<P>[] {
   const today = now.toISOString().slice(0, 10)
@@ -164,12 +170,8 @@ export function domainRows<P extends { domains: string[] }>(
     return {
       ...d,
       expiry: d.isExpired || d.expires < today ? 'expired' : d.expires <= soon ? 'soon' : 'ok',
-      projects: projects.filter((p) =>
-        p.domains.some((host) => {
-          const h = bare(host)
-          return h === name || h.endsWith(`.${name}`)
-        }),
-      ),
+      projects: projects.filter((p) => p.domains.some((host) => covers(bare(host), name))),
+      repository: repositories.get(name) ?? null,
     }
   })
 }

@@ -2,12 +2,15 @@ import 'server-only'
 import { schema } from '@copper/db'
 import { eq } from 'drizzle-orm'
 import { unstable_cache } from 'next/cache'
+import { cachedProperties } from '@/features/analytics/data'
+import type { GoogleSetupLists } from '@/features/google/setup'
+import { cachedSiteUrls } from '@/features/search-console/data'
 import { db } from '@/lib/db'
 import { env } from '@/lib/env'
 import { type DomainList, fetchNamecheapDomains, maskKey, outboundIp } from './namecheap'
 import { unseal } from './secret-box'
 
-const { account, namecheapCredential } = schema
+const { account, domainRepository, namecheapCredential } = schema
 
 /** The sign-in methods linked to an account, such as `github` and `justauth`. */
 export async function signInMethods(userId: string): Promise<string[]> {
@@ -73,5 +76,25 @@ export async function namecheapDomains(userId: string): Promise<DomainList | nul
   } catch (error) {
     if (error instanceof NotCached) return { ok: false, error: error.message }
     throw error
+  }
+}
+
+/** The user's stored GitHub repository for each domain, keyed by the lower-case domain. */
+export async function domainRepositories(userId: string): Promise<Map<string, string>> {
+  const rows = await db()
+    .select({ domain: domainRepository.domain, repository: domainRepository.repository })
+    .from(domainRepository)
+    .where(eq(domainRepository.userId, userId))
+  return new Map(rows.map((r) => [r.domain, r.repository]))
+}
+
+/** What the service account can see in Google Analytics and Search Console, for the Domains page. */
+export async function googleSetupLists(): Promise<GoogleSetupLists> {
+  if (!env().googleServiceAccount) return { kind: 'off' }
+  try {
+    const [properties, siteUrls] = await Promise.all([cachedProperties(), cachedSiteUrls()])
+    return { kind: 'ok', analyticsHosts: properties.flatMap((p) => p.hosts), siteUrls }
+  } catch (error) {
+    return { kind: 'error', error: (error as Error).message }
   }
 }
