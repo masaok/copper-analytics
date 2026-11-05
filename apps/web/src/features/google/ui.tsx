@@ -13,6 +13,12 @@ export const rangeParam = (value: SearchParam): GoogleRangeId => {
 
 export const percent = (share: number) => `${(share * 100).toFixed(1)}%`
 
+/** 125 seconds as `2m 5s`. */
+export const duration = (seconds: number) => {
+  const s = Math.round(seconds)
+  return s >= 60 ? `${Math.floor(s / 60)}m ${s % 60}s` : `${s}s`
+}
+
 /** `2026-11-03` as `Nov 3`. */
 export const shortDay = (day: string) =>
   new Date(`${day}T00:00:00Z`).toLocaleDateString('en-US', {
@@ -110,13 +116,15 @@ export function Overview({
   stats,
   metric,
   daily,
+  label = 'All sites',
 }: {
   stats: { label: string; value: string }[]
   metric: string
   daily: { day: string; value: number }[]
+  label?: string
 }) {
   return (
-    <section aria-label="All sites" className="mb-6">
+    <section aria-label={label} className="mb-6">
       <dl className="mb-4 grid grid-cols-2 gap-x-6 gap-y-3 border-y border-line py-3 sm:grid-cols-5">
         {stats.map((s) => (
           <div key={s.label}>

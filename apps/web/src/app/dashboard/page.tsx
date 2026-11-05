@@ -4,15 +4,68 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Shell } from '@/components/shell'
 import { buttonClass } from '@/components/ui'
+import { bare } from '@/features/google/ranges'
 import { cachedProjects } from '@/features/projects/queries'
 import { loadOverview } from '@/features/stats/data'
 import { requireUser } from '@/lib/auth'
+import { env } from '@/lib/env'
 
 export const metadata: Metadata = { title: 'All projects' }
+
+const GOOGLE_LINKS = [
+  {
+    path: '/dashboard/search-console',
+    label: 'Google Search Console',
+    // A magnifying glass.
+    icon: (
+      <>
+        <circle cx="7" cy="7" r="4.5" />
+        <path d="m10.5 10.5 3.5 3.5" />
+      </>
+    ),
+  },
+  {
+    path: '/dashboard/google-analytics',
+    label: 'Google Analytics',
+    // Three rising bars.
+    icon: <path d="M3 13.5v-3M8 13.5v-7M13 13.5V2.5" />,
+  },
+] as const
+
+/** Icon buttons to a domain's Search Console and Analytics pages. */
+function GoogleLinks({ domain }: { domain: string }) {
+  const host = bare(domain)
+  return (
+    <span className="flex gap-1">
+      {GOOGLE_LINKS.map(({ path, label, icon }) => (
+        <Link
+          key={path}
+          href={`${path}/${host}`}
+          aria-label={`${label} for ${host}`}
+          title={label}
+          className="inline-flex size-7 items-center justify-center rounded-md border border-line text-muted hover:bg-surface hover:text-ink"
+        >
+          <svg
+            viewBox="0 0 16 16"
+            aria-hidden
+            className="size-3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+          >
+            {icon}
+          </svg>
+        </Link>
+      ))}
+    </span>
+  )
+}
 
 export default async function Dashboard({ searchParams }: PageProps<'/dashboard'>) {
   const user = await requireUser()
   const byName = (await searchParams).sort === 'name'
+  const google = Boolean(env().googleServiceAccount)
   const projects = await cachedProjects(user.id)
   const rows = await loadOverview(user.id, projects)
   if (!byName) {
@@ -80,6 +133,7 @@ export default async function Dashboard({ searchParams }: PageProps<'/dashboard'
                   <th className="pb-2 pl-4 font-normal">vs yesterday</th>
                   <th className="pb-2 font-normal">Visitors, 30 days</th>
                   <th className="pb-2 text-right font-normal">Pageviews, 30 days</th>
+                  {google ? <th className="pb-2 pl-4 font-normal">Google</th> : null}
                 </tr>
               </thead>
               <tbody>
@@ -116,6 +170,13 @@ export default async function Dashboard({ searchParams }: PageProps<'/dashboard'
                       />
                     </td>
                     <td className="tabular py-1.5 text-right">{formatNumber(row.pageviews30d)}</td>
+                    {google ? (
+                      <td className="py-1 pl-4">
+                        {row.project.domains[0] ? (
+                          <GoogleLinks domain={row.project.domains[0]} />
+                        ) : null}
+                      </td>
+                    ) : null}
                   </tr>
                 ))}
               </tbody>

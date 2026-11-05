@@ -46,3 +46,17 @@ export function matchSites(
   }
   return [...byHost.values()].sort((a, b) => a.host.localeCompare(b.host))
 }
+
+/**
+ * The entry for `host`, or else the domain property that covers it, so a link to
+ * `shop.example.com` finds `sc-domain:example.com`.
+ */
+export function siteFor<T extends { site: MatchedSite }>(sites: T[], host: string): T | undefined {
+  return (
+    sites.find((s) => s.site.host === host) ??
+    sites.find((s) => s.site.siteUrl.startsWith('sc-domain:') && host.endsWith(`.${s.site.host}`))
+  )
+}
+
+/** An average position to one decimal, or a dash when there were no impressions. */
+export const position = (p: number) => (p > 0 ? p.toFixed(1) : '–')

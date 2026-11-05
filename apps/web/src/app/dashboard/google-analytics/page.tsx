@@ -1,15 +1,16 @@
-import { formatNumber, Sparkline, TimeSeriesChart } from '@copper/ui'
+import { formatNumber, Sparkline } from '@copper/ui'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { Shell } from '@/components/shell'
-import { type AnalyticsRow, loadAnalytics } from '@/features/analytics/data'
+import { loadAnalytics } from '@/features/analytics/data'
 import { GOOGLE_RANGES, sumByDay, weightedMean } from '@/features/google/ranges'
 import {
+  duration,
   Overview,
   one,
   percent,
   RangeNav,
-  RankedTable,
   rangeParam,
   shortDay,
 } from '@/features/google/ui'
@@ -18,45 +19,18 @@ import { requireUser } from '@/lib/auth'
 
 export const metadata: Metadata = { title: 'Google Analytics' }
 
-/** 125 seconds as `2m 5s`. */
-const duration = (seconds: number) => {
-  const s = Math.round(seconds)
-  return s >= 60 ? `${Math.floor(s / 60)}m ${s % 60}s` : `${s}s`
-}
-
-function Rows({
-  rows,
-  keyLabel,
-  valueLabel,
-}: {
-  rows: AnalyticsRow[]
-  keyLabel: string
-  valueLabel: string
-}) {
-  return (
-    <RankedTable
-      keyLabel={keyLabel}
-      columns={[valueLabel, 'Users']}
-      empty="Nothing recorded in this period."
-      rows={rows.map((row) => ({
-        key: row.key,
-        bar: row.value,
-        values: [formatNumber(row.value), formatNumber(row.users)],
-      }))}
-    />
-  )
-}
-
 export default async function GoogleAnalyticsPage({
   searchParams,
 }: PageProps<'/dashboard/google-analytics'>) {
   const user = await requireUser()
   const search = await searchParams
   const range = rangeParam(search.range)
+  // Each property used to open below the table as `?site=`. Old links land on its own page.
+  const legacy = one(search.site)
+  if (legacy) redirect(`/dashboard/google-analytics/${encodeURIComponent(legacy)}?range=${range}`)
   const projects = await cachedProjects(user.id)
   const data = await loadAnalytics(projects, GOOGLE_RANGES[range])
   const reports = [...(data?.properties ?? [])].sort((a, b) => b.totals.users - a.totals.users)
-  const selected = reports.find((r) => r.property.host === one(search.site)) ?? reports[0]
   const ok = reports.filter((r) => !r.error)
   const sum = (pick: (t: (typeof ok)[number]['totals']) => number) =>
     ok.reduce((n, r) => n + pick(r.totals), 0)
@@ -66,21 +40,13 @@ export default async function GoogleAnalyticsPage({
       ok.map((r) => pick(r.totals)),
       ok.map((r) => r.totals.sessions),
     )
-  const href = (params: { range?: string; site?: string }) => {
-    const query = new URLSearchParams({
-      range,
-      ...(selected ? { site: selected.property.host } : {}),
-    })
-    for (const [key, value] of Object.entries(params)) if (value) query.set(key, value)
-    return `/dashboard/google-analytics?${query}`
-  }
 
   return (
     <Shell user={user}>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-semibold tracking-tight">Google Analytics</h1>
         {data && reports.length > 0 ? (
-          <RangeNav range={range} href={(id) => href({ range: id })} />
+          <RangeNav range={range} href={(id) => `/dashboard/google-analytics?range=${id}`} />
         ) : null}
       </div>
 
@@ -128,15 +94,11 @@ export default async function GoogleAnalyticsPage({
               </thead>
               <tbody>
                 {reports.map(({ property, totals, daily, error }) => (
-                  <tr
-                    key={property.host}
-                    className={`border-t border-line ${property === selected?.property ? 'bg-surface' : ''}`}
-                  >
+                  <tr key={property.host} className="border-t border-line">
                     <td className="py-1.5 pr-4 pl-1">
                       <Link
-                        href={href({ site: property.host })}
+                        href={`/dashboard/google-analytics/${property.host}?range=${range}`}
                         className="font-medium hover:underline"
-                        aria-current={property === selected?.property ? 'true' : undefined}
                       >
                         {property.host}
                       </Link>
@@ -174,32 +136,6 @@ export default async function GoogleAnalyticsPage({
               </tbody>
             </table>
           </div>
-
-          {selected && !selected.error ? (
-            <section aria-labelledby="property-heading">
-              <h2 id="property-heading" className="mb-2 text-base font-semibold tracking-tight">
-                {selected.property.host}
-              </h2>
-              <TimeSeriesChart
-                metric="Users"
-                points={selected.daily.map((d) => ({
-                  label: shortDay(d.day),
-                  title: shortDay(d.day),
-                  value: d.users,
-                }))}
-              />
-              <div className="mt-6 grid gap-x-8 gap-y-6 lg:grid-cols-2">
-                <div className="min-w-0 overflow-x-auto">
-                  <h3 className="mb-2 text-sm font-medium">Top pages</h3>
-                  <Rows rows={selected.pages} keyLabel="Page" valueLabel="Views" />
-                </div>
-                <div className="min-w-0 overflow-x-auto">
-                  <h3 className="mb-2 text-sm font-medium">Top sources</h3>
-                  <Rows rows={selected.sources} keyLabel="Source / medium" valueLabel="Sessions" />
-                </div>
-              </div>
-            </section>
-          ) : null}
         </>
       )}
     </Shell>

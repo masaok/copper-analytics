@@ -34,16 +34,20 @@ export function SidebarNav({
               ['/dashboard/search-console', 'Google Search Console'],
               ['/dashboard/google-analytics', 'Google Analytics'],
             ] as const
-          ).map(([href, label]) => (
-            <Link
-              key={href}
-              href={href}
-              className={item(path === href)}
-              aria-current={path === href ? 'page' : undefined}
-            >
-              {label}
-            </Link>
-          ))
+          ).map(([href, label]) => {
+            // A site's own page, `/dashboard/search-console/example.com`, stays under its item.
+            const active = path === href || path.startsWith(`${href}/`)
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={item(active)}
+                aria-current={active ? 'page' : undefined}
+              >
+                {label}
+              </Link>
+            )
+          })
         : null}
       <div className="my-2 border-t border-line" />
       <Link
