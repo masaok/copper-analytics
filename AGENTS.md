@@ -12,7 +12,7 @@ Copper Analytics is a cookieless traffic dashboard. This repo is the complete, s
 | Lint with fixes (humans and agents, never hooks or CI) | `pnpm lint:fix` |
 | One package's tests | `pnpm --filter @copper/core test` |
 | New migration after a schema change | `pnpm --filter @copper/db generate` |
-| Apply migrations | `DATABASE_URL=... pnpm --filter @copper/db migrate` |
+| Apply migrations (production on Vercel applies them in its build) | `DATABASE_URL=... pnpm --filter @copper/db migrate` |
 | Local Postgres, nothing to install | `pnpm dev:db` |
 | Demo account and 30 days of traffic | `DATABASE_URL=... pnpm seed` |
 
@@ -38,6 +38,7 @@ Run `pnpm verify` before you report work as done, and paste its output. If a ste
 - [docs/guardrails.md](docs/guardrails.md) lists each rule and what enforces it. Add a check before you add a sentence here.
 - `packages/core` stays free of I/O and of Node-only APIs. It runs in Workers, Node and the browser.
 - Change the schema in `packages/db/src/schema.ts`, then generate a migration. Never edit an applied migration.
+- A migration runs while the previous code still serves, so it must not break that code. Add in one release, drop or rename in a later one. See [Migrations](docs/SELF_HOSTING.md#migrations).
 - No secrets in the repo. `.env.example` lists every variable with no values.
 
 ## Trust
