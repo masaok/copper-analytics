@@ -29,8 +29,10 @@ export default async function NamecheapSettings() {
         {stored ? (
           <div className="flex items-center gap-3 text-sm">
             <span>
-              Stored key for <span className="font-medium">{stored.apiUser}</span>, ending in{' '}
-              <code className="font-mono">{stored.last4}</code>
+              Stored key for <span className="font-medium">{stored.apiUser}</span>:{' '}
+              <code className="font-mono" data-testid="namecheap-masked-key">
+                {stored.masked}
+              </code>
             </span>
             <form action={deleteNamecheap}>
               <button type="submit" className={buttonClass('danger')}>

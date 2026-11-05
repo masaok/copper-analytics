@@ -32,6 +32,14 @@ export function parseNamecheapInput(
   return { apiUser: user, apiKey: key }
 }
 
+/**
+ * Enough of a key to tell which one is stored: its first and last four characters. The middle is
+ * a fixed run of dots, so the mask does not reveal the key's length.
+ */
+export function maskKey(key: string): string {
+  return key.length > 8 ? `${key.slice(0, 4)}${'•'.repeat(8)}${key.slice(-4)}` : '•'.repeat(8)
+}
+
 const ENTITIES: Record<string, string> = {
   amp: '&',
   lt: '<',

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   fetchNamecheapDomains,
+  maskKey,
   parseDomainList,
   parseNamecheapInput,
 } from '../src/features/settings/namecheap'
@@ -88,5 +89,16 @@ describe('parseNamecheapInput', () => {
     expect(parseNamecheapInput('me', 'short')).toHaveProperty('error')
     expect(parseNamecheapInput('me', `${'a'.repeat(20)}&x=1`)).toHaveProperty('error')
     expect(parseNamecheapInput('', 'a'.repeat(32))).toHaveProperty('error')
+  })
+})
+
+describe('maskKey', () => {
+  it('shows the first and last four characters, and hides the length', () => {
+    expect(maskKey('abcd0123456789abcdef0123456789wxyz')).toBe('abcd••••••••wxyz')
+    expect(maskKey('abcd1234wxyz')).toBe('abcd••••••••wxyz')
+  })
+
+  it('shows nothing of a key too short to split', () => {
+    expect(maskKey('abcd1234')).toBe('••••••••')
   })
 })
