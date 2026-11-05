@@ -62,7 +62,7 @@ export default async function Domains({ searchParams }: PageProps<'/dashboard/do
                       Domain
                     </Link>
                   </th>
-                  <th className="pb-2 font-normal">Copper project</th>
+                  <th className="pb-2 font-normal">Repository</th>
                   <th className="pb-2 font-normal">
                     <Link href="/dashboard/domains?sort=expires" className={sortLink(byExpiry)}>
                       Expires
