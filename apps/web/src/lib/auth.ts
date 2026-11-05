@@ -5,7 +5,8 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { nextCookies } from 'better-auth/next-js'
 import { genericOAuth } from 'better-auth/plugins'
 import { headers } from 'next/headers'
-import { redirect } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
+import { isAdmin } from '@/features/admin/access'
 import { db } from './db'
 import { env } from './env'
 
@@ -82,6 +83,8 @@ export interface SessionUser {
   email: string
   image?: string | null
   projectLimit: number
+  /** May open /admin: the verified owner of ADMIN_EMAIL. */
+  admin: boolean
 }
 
 export async function currentUser(): Promise<SessionUser | null> {
@@ -89,11 +92,18 @@ export async function currentUser(): Promise<SessionUser | null> {
   const requestHeaders = await headers()
   const session = await auth().api.getSession({ headers: requestHeaders })
   if (!session) return null
-  const { id, name, email, image } = session.user
+  const { id, name, email, emailVerified, image } = session.user
   const projectLimit = (session.user as { projectLimit?: number }).projectLimit ?? 10
-  return { id, name, email, image, projectLimit }
+  const admin = isAdmin({ email, emailVerified }, env().adminEmail)
+  return { id, name, email, image, projectLimit, admin }
 }
 
 export async function requireUser(): Promise<SessionUser> {
   return (await currentUser()) ?? redirect('/')
+}
+
+/** Everyone but the admin gets a 404, so the page does not reveal that it exists. */
+export async function requireAdmin(): Promise<SessionUser> {
+  const user = await requireUser()
+  return user.admin ? user : notFound()
 }

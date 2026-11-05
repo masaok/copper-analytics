@@ -12,6 +12,9 @@ One row per user-facing surface. `pnpm check:features` fails when a route in cod
 | `web:/dashboard/search-console/[host]` | One Search Console property: totals, daily clicks chart, top queries and pages. A subdomain finds the domain property that covers it; `?site=` on the list redirects here | `apps/web/src/app/dashboard/search-console/[host]/page.tsx`, `features/search-console/sites.ts` (`siteFor`) | Set `GOOGLE_SERVICE_ACCOUNT_JSON`, sign in, open `/dashboard/search-console/example.com?range=28d` |
 | `web:/dashboard/google-analytics` | Google Analytics: an all-properties total and daily users chart first, then users, sessions, views, engagement and session length for the properties whose web stream is on one of the user's project domains, each linking to its own page | `apps/web/src/app/dashboard/google-analytics/page.tsx`, `features/analytics/data.ts` (`loadAnalytics`) | Set `GOOGLE_SERVICE_ACCOUNT_JSON`, sign in, open `/dashboard/google-analytics?range=28d` |
 | `web:/dashboard/google-analytics/[host]` | One Analytics property: totals, daily users chart, top pages and sources. `?site=` on the list redirects here | `apps/web/src/app/dashboard/google-analytics/[host]/page.tsx`, `features/analytics/data.ts` (`loadAnalytics`) | Set `GOOGLE_SERVICE_ACCOUNT_JSON`, sign in, open `/dashboard/google-analytics/example.com?range=28d` |
+| `web:/dashboard/settings` | Account settings: name, email, sign-in methods and projects against the limit. `/settings` redirects here | `apps/web/src/app/dashboard/settings/page.tsx`, `layout.tsx` (the tabs) | Sign in, open `/dashboard/settings` |
+| `web:/dashboard/settings/namecheap` | Namecheap API tab: stores a username and API key (AES-256-GCM, never shown again), shows this server's IP for Namecheap's allowlist, and lists the account's domains | `apps/web/src/app/dashboard/settings/namecheap/page.tsx`, `features/settings/namecheap.ts`, `features/settings/actions.ts` | Sign in, open `/dashboard/settings/namecheap`, save a key from an allowlisted IP |
+| `web:/admin` | Sitewide totals and every user, for the verified owner of `ADMIN_EMAIL` only; anyone else gets a 404. The dashboard sidebar shows that account a red Admin button, and `/admin` has a green one back | `apps/web/src/app/admin/page.tsx`, `features/admin/data.ts` | Set `ADMIN_EMAIL` to a verified sign-in's address, sign in, open `/admin` |
 | `web:/new` | Create a project | `apps/web/src/app/new/page.tsx`, `features/projects/actions.ts` (`createProject`) | Sign in, open `/new`, submit the form |
 | `web:/p/[siteKey]` | Project report: range picker, KPI cards, chart, breakdown panels, live count | `apps/web/src/app/p/[siteKey]/page.tsx`, `features/stats/report.tsx`, `features/stats/data.ts` (`loadReport`) | Sign in, open `/p/demoshop01?range=7d&metric=pageviews` |
 | `web:/share/[siteKey]` | The same report, read-only, only while sharing is on | `apps/web/src/app/share/[siteKey]/page.tsx` | Turn sharing on in settings, open `/share/<key>` signed out |
@@ -32,7 +35,7 @@ One row per user-facing surface. `pnpm check:features` fails when a route in cod
 | `ingest:/flush` | Runs the hourly flush now; `?daily` adds retention and rollups | `apps/ingest/src/app.ts` (`runFlush`) | `curl -s -X POST -H 'Authorization: Bearer dev-ingest-secret' localhost:8787/flush` |
 | `ingest:/health` | Liveness | `apps/ingest/src/app.ts` | `curl -s localhost:8787/health` |
 
-`/search-console` and `/google-analytics` redirect to their `/dashboard` paths (`apps/web/next.config.ts`).
+`/search-console`, `/google-analytics` and `/settings` redirect to their `/dashboard` paths (`apps/web/next.config.ts`).
 
 ## Driving the app locally
 
