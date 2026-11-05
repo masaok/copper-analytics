@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  domainRows,
   fetchNamecheapDomains,
   maskKey,
   parseDomainList,
@@ -28,8 +29,8 @@ describe('parseDomainList', () => {
       ok: true,
       total: 2,
       domains: [
-        { name: 'a.com', expires: '01/01/2027', isExpired: true, autoRenew: true },
-        { name: 'b&c.io', expires: '01/01/2027', isExpired: false, autoRenew: true },
+        { name: 'a.com', expires: '2027-01-01', isExpired: true, autoRenew: true },
+        { name: 'b&c.io', expires: '2027-01-01', isExpired: false, autoRenew: true },
       ],
     })
   })
@@ -41,6 +42,38 @@ describe('parseDomainList', () => {
       ok: false,
       error: 'Namecheap returned an unreadable response.',
     })
+  })
+})
+
+describe('domainRows', () => {
+  const domain = (name: string, expires: string, isExpired = false) => ({
+    name,
+    expires,
+    isExpired,
+    autoRenew: false,
+  })
+  const blog = { siteKey: 'k1', domains: ['www.Example.com', 'blog.other.io'] }
+  const shop = { siteKey: 'k2', domains: ['example.com'] }
+
+  it('marks expiry against today and joins the projects on each domain or its subdomains', () => {
+    const rows = domainRows(
+      [
+        domain('example.com', '2026-11-04'),
+        domain('other.io', '2026-12-05'),
+        domain('third.net', '2026-12-06'),
+        domain('flagged.org', '2030-01-01', true),
+        domain('mple.com', '2030-01-01'),
+      ],
+      [blog, shop],
+      new Date('2026-11-05T12:00:00Z'),
+    )
+    expect(rows.map((r) => [r.name, r.expiry, r.projects.map((p) => p.siteKey)])).toEqual([
+      ['example.com', 'expired', ['k1', 'k2']],
+      ['other.io', 'soon', ['k1']],
+      ['third.net', 'ok', []],
+      ['flagged.org', 'expired', []],
+      ['mple.com', 'ok', []],
+    ])
   })
 })
 

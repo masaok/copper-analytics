@@ -1,3 +1,5 @@
+import { bare } from '@/features/google/ranges'
+
 const API_URL = 'https://api.namecheap.com/xml.response'
 /** Namecheap's largest page. */
 const PAGE_SIZE = 100
@@ -6,6 +8,7 @@ const MAX_PAGES = 50
 
 export interface NamecheapDomain {
   name: string
+  /** `YYYY-MM-DD`. Namecheap sends `MM/DD/YYYY`. */
   expires: string
   isExpired: boolean
   autoRenew: boolean
@@ -50,6 +53,12 @@ const ENTITIES: Record<string, string> = {
 const decode = (text: string) =>
   text.replace(/&(amp|lt|gt|quot|apos);/g, (_, e) => ENTITIES[e] ?? '')
 
+/** `MM/DD/YYYY` to `YYYY-MM-DD`, which sorts and compares as a string. */
+const isoDate = (date: string) => {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(date)
+  return m ? `${m[3]}-${m[1]}-${m[2]}` : date
+}
+
 const attributes = (tag: string): Record<string, string> =>
   Object.fromEntries([...tag.matchAll(/(\w+)="([^"]*)"/g)].map(([, k, v]) => [k, decode(v ?? '')]))
 
@@ -66,7 +75,7 @@ export function parseDomainList(xml: string): DomainList {
     const a = attributes(m[1] ?? '')
     return {
       name: a.Name ?? '',
-      expires: a.Expires ?? '',
+      expires: isoDate(a.Expires ?? ''),
       isExpired: a.IsExpired === 'true',
       autoRenew: a.AutoRenew === 'true',
     }
@@ -129,4 +138,38 @@ export async function outboundIp(fetcher: typeof fetch = fetch): Promise<string 
   } catch {
     return null
   }
+}
+
+/** Within this many days of expiring, a domain is marked. */
+const SOON_DAYS = 30
+
+export type Expiry = 'expired' | 'soon' | 'ok'
+
+export interface DomainRow<P> extends NamecheapDomain {
+  expiry: Expiry
+  /** The Copper projects tracking this domain or one of its subdomains. */
+  projects: P[]
+}
+
+/** Joins the domains to the projects on them and marks the ones expired or about to expire. */
+export function domainRows<P extends { domains: string[] }>(
+  domains: NamecheapDomain[],
+  projects: P[],
+  now = new Date(),
+): DomainRow<P>[] {
+  const today = now.toISOString().slice(0, 10)
+  const soon = new Date(now.getTime() + SOON_DAYS * 86_400_000).toISOString().slice(0, 10)
+  return domains.map((d) => {
+    const name = d.name.toLowerCase()
+    return {
+      ...d,
+      expiry: d.isExpired || d.expires < today ? 'expired' : d.expires <= soon ? 'soon' : 'ok',
+      projects: projects.filter((p) =>
+        p.domains.some((host) => {
+          const h = bare(host)
+          return h === name || h.endsWith(`.${name}`)
+        }),
+      ),
+    }
+  })
 }

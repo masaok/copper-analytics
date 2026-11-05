@@ -1,9 +1,10 @@
 import 'server-only'
 import { schema } from '@copper/db'
 import { eq } from 'drizzle-orm'
+import { unstable_cache } from 'next/cache'
 import { db } from '@/lib/db'
 import { env } from '@/lib/env'
-import { type DomainList, fetchNamecheapDomains, maskKey } from './namecheap'
+import { type DomainList, fetchNamecheapDomains, maskKey, outboundIp } from './namecheap'
 import { unseal } from './secret-box'
 
 const { account, namecheapCredential } = schema
@@ -35,26 +36,42 @@ export async function namecheapSummary(userId: string) {
   return { apiUser: row.apiUser, masked, updatedAt: row.updatedAt }
 }
 
+/** A failure to show, thrown so the cache keeps only lists that loaded. */
+class NotCached extends Error {}
+
 /**
- * The user's Namecheap domains, fetched now with their stored key, calling from `clientIp`
- * (see `outboundIp`). Null when no key is stored.
+ * The user's Namecheap domains, fetched with their stored key and kept for five minutes, since
+ * each load pages through the whole account. Null when no key is stored.
  */
-export async function namecheapDomains(
-  userId: string,
-  clientIp: string | null,
-): Promise<DomainList | null> {
+export async function namecheapDomains(userId: string): Promise<DomainList | null> {
   const [row] = await db()
     .select()
     .from(namecheapCredential)
     .where(eq(namecheapCredential.userId, userId))
     .limit(1)
   if (!row) return null
-  if (!clientIp) return { ok: false, error: "Could not find this server's IP address." }
   let apiKey: string
   try {
     apiKey = unseal(row.apiKeyEncrypted, env().BETTER_AUTH_SECRET)
   } catch {
     return { ok: false, error: 'The stored key can no longer be read. Save it again.' }
   }
-  return fetchNamecheapDomains({ apiUser: row.apiUser, apiKey }, clientIp)
+  try {
+    // The key stays in the closure: unstable_cache puts a function's arguments in its cache key.
+    // Saving a key changes `updatedAt`, so a new key never reads the old key's list.
+    return await unstable_cache(
+      async () => {
+        const clientIp = await outboundIp()
+        if (!clientIp) throw new NotCached("Could not find this server's IP address.")
+        const list = await fetchNamecheapDomains({ apiUser: row.apiUser, apiKey }, clientIp)
+        if (!list.ok) throw new NotCached(list.error)
+        return list
+      },
+      ['namecheap-domains', userId, row.updatedAt.toISOString()],
+      { revalidate: 300 },
+    )()
+  } catch (error) {
+    if (error instanceof NotCached) return { ok: false, error: error.message }
+    throw error
+  }
 }
