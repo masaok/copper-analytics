@@ -8,9 +8,9 @@ const nextConfig: NextConfig = {
   // Serves /_next under a path, e.g. /_app, when another dev server proxies this one. Without it the
   // proxy's own /_next answers this app's dev websocket, and its pages never hydrate.
   assetPrefix: process.env.COPPER_ASSET_PREFIX || undefined,
-  // The Google pages moved under /dashboard with the rest of the sidebar.
+  // The Google pages and settings live under /dashboard with the rest of the sidebar.
   redirects: async () =>
-    ['search-console', 'google-analytics'].map((page) => ({
+    ['search-console', 'google-analytics', 'settings'].map((page) => ({
       source: `/${page}`,
       destination: `/dashboard/${page}`,
       permanent: true,

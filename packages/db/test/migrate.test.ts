@@ -22,6 +22,7 @@ describe('migrations', () => {
       'copper_migrations',
       'db_size_log',
       'flush_log',
+      'namecheap_credential',
       'project',
       'session',
       'stats_daily',

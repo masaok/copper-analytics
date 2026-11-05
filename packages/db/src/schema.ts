@@ -68,6 +68,22 @@ export const account = pgTable(
   (t) => [index('account_user_id_idx').on(t.userId)],
 )
 
+/**
+ * A user's Namecheap API access, for listing their domains. The key is encrypted with AES-256-GCM
+ * under a key derived from BETTER_AUTH_SECRET and is never sent back to the browser.
+ */
+export const namecheapCredential = pgTable('namecheap_credential', {
+  userId: text('user_id')
+    .primaryKey()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  apiUser: text('api_user').notNull(),
+  /** `iv.tag.ciphertext`, each base64url. */
+  apiKeyEncrypted: text('api_key_encrypted').notNull(),
+  /** The key's last four characters, so the settings page can show which key is stored. */
+  apiKeyLast4: varchar('api_key_last4', { length: 4 }).notNull(),
+  ...timestamps,
+})
+
 export const verification = pgTable(
   'verification',
   {

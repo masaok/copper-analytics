@@ -25,6 +25,8 @@ export interface Env {
   cookieDomain?: string
   /** A Google service account that can read Search Console and Analytics, for the /dashboard/search-console and /dashboard/google-analytics pages. */
   googleServiceAccount?: { clientEmail: string; privateKey: string }
+  /** The one verified email address that may open /admin. Unset, nobody can. */
+  adminEmail?: string
   debug: boolean
 }
 
@@ -92,6 +94,7 @@ export function readEnv(source: Record<string, string | undefined>): Env {
     revalidateSecret: source.REVALIDATE_SECRET,
     cookieDomain: source.COOKIE_DOMAIN,
     googleServiceAccount,
+    adminEmail: source.ADMIN_EMAIL?.trim().toLowerCase() || undefined,
     debug: source.COPPER_DEBUG === '1',
   }
 }

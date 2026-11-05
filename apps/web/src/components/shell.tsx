@@ -49,6 +49,7 @@ export async function Shell({
         <SidebarNav
           className="max-md:hidden md:min-h-0 md:flex-1 md:overflow-y-auto"
           google={Boolean(env().googleServiceAccount)}
+          admin={user.admin}
         />
         <div className="flex items-center gap-2.5 border-t border-line px-3 py-2.5 max-md:hidden">
           {user.image ? (

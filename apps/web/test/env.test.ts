@@ -16,6 +16,14 @@ describe('readEnv', () => {
     )
   })
 
+  it('reads the admin address, lowercased, and leaves it unset when empty', () => {
+    const demo = { ...base, COPPER_DEMO_LOGIN: '1' }
+    expect(readEnv({ ...demo, ADMIN_EMAIL: ' Owner@Example.com ' }).adminEmail).toBe(
+      'owner@example.com',
+    )
+    expect(readEnv({ ...demo, ADMIN_EMAIL: '' }).adminEmail).toBeUndefined()
+  })
+
   it('requires a way to sign in', () => {
     expect(() => readEnv(base)).toThrow(/GITHUB_CLIENT_ID/)
     expect(readEnv({ ...base, COPPER_DEMO_LOGIN: '1' }).demoLogin).toBe(true)
