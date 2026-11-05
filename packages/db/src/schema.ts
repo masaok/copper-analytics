@@ -84,6 +84,22 @@ export const namecheapCredential = pgTable('namecheap_credential', {
   ...timestamps,
 })
 
+/** The GitHub repository a user keeps a domain's code in, shown on the Domains page. */
+export const domainRepository = pgTable(
+  'domain_repository',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    /** The bare domain in lower case, as Namecheap names it. */
+    domain: text('domain').notNull(),
+    /** `owner/name`. */
+    repository: text('repository').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.domain] })],
+)
+
 export const verification = pgTable(
   'verification',
   {

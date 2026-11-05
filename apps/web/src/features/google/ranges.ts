@@ -9,6 +9,10 @@ export const isGoogleRangeId = (value: unknown): value is GoogleRangeId =>
 /** A host in lower case without a leading `www.`, so `www.Example.com` and `example.com` compare equal. */
 export const bare = (host: string) => host.toLowerCase().replace(/^www\./, '')
 
+/** Whether `host` is `domain` or one of its subdomains. Both already bare. */
+export const covers = (host: string, domain: string) =>
+  host === domain || host.endsWith(`.${domain}`)
+
 const isoDay = (ms: number) => new Date(ms).toISOString().slice(0, 10)
 
 /** The last `days` whole days, ending yesterday (UTC), as YYYY-MM-DD dates. */

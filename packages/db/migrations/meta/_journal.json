@@ -15,6 +15,13 @@
       "when": 1793906599415,
       "tag": "0001_namecheap_credential",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793922262993,
+      "tag": "0002_domain_repository",
+      "breakpoints": true
     }
   ]
 }

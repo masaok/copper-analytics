@@ -32,7 +32,7 @@ const google = <T>(path: string, body?: object) =>
   googleApi<T>(SCOPES.searchConsole, `${API}${path}`, body)
 
 /** Every property the service account has been added to. */
-const cachedSiteUrls = unstable_cache(
+export const cachedSiteUrls = unstable_cache(
   async () => {
     const { siteEntry = [] } = await google<{ siteEntry?: { siteUrl: string }[] }>('/sites')
     return siteEntry.map((s) => s.siteUrl)

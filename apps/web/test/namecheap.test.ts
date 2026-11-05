@@ -65,6 +65,7 @@ describe('domainRows', () => {
         domain('mple.com', '2030-01-01'),
       ],
       [blog, shop],
+      new Map(),
       new Date('2026-11-05T12:00:00Z'),
     )
     expect(rows.map((r) => [r.name, r.expiry, r.projects.map((p) => p.siteKey)])).toEqual([
@@ -73,6 +74,18 @@ describe('domainRows', () => {
       ['third.net', 'ok', []],
       ['flagged.org', 'expired', []],
       ['mple.com', 'ok', []],
+    ])
+  })
+
+  it('takes the stored repository for a domain in any case, and null when none is stored', () => {
+    const rows = domainRows(
+      [domain('Example.com', '2030-01-01'), domain('other.io', '2030-01-01')],
+      [blog, shop],
+      new Map([['example.com', 'masaok/example']]),
+    )
+    expect(rows.map((r) => [r.name, r.repository, r.projects.map((p) => p.siteKey)])).toEqual([
+      ['Example.com', 'masaok/example', ['k1', 'k2']],
+      ['other.io', null, ['k1']],
     ])
   })
 })

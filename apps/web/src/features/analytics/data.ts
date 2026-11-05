@@ -46,7 +46,7 @@ export interface PropertyReport {
 const admin = <T>(path: string) => googleApi<T>(SCOPES.analytics, `${ADMIN}${path}`)
 
 /** Every property the service account can read, with the hosts of its web streams. */
-const cachedProperties = unstable_cache(
+export const cachedProperties = unstable_cache(
   async (): Promise<AnalyticsProperty[]> => {
     const summaries: { property: string; displayName: string }[] = []
     let pageToken = ''
