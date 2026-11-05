@@ -1,44 +1,16 @@
-import { formatNumber, Sparkline, TimeSeriesChart } from '@copper/ui'
+import { formatNumber, Sparkline } from '@copper/ui'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { Shell } from '@/components/shell'
 import { GOOGLE_RANGES, sumByDay, weightedMean } from '@/features/google/ranges'
-import {
-  Overview,
-  one,
-  percent,
-  RangeNav,
-  RankedTable,
-  rangeParam,
-  shortDay,
-} from '@/features/google/ui'
+import { Overview, one, percent, RangeNav, rangeParam, shortDay } from '@/features/google/ui'
 import { cachedProjects } from '@/features/projects/queries'
-import { loadSearchConsole, type SearchRow } from '@/features/search-console/data'
+import { loadSearchConsole } from '@/features/search-console/data'
+import { position } from '@/features/search-console/sites'
 import { requireUser } from '@/lib/auth'
 
 export const metadata: Metadata = { title: 'Google Search Console' }
-
-const position = (p: number) => (p > 0 ? p.toFixed(1) : '–')
-
-function RowsTable({ rows, keyLabel }: { rows: SearchRow[]; keyLabel: string }) {
-  return (
-    <RankedTable
-      keyLabel={keyLabel}
-      columns={['Clicks', 'Impressions', 'CTR', 'Position']}
-      empty="No searches in this period."
-      rows={rows.map((row) => ({
-        key: row.key,
-        bar: row.clicks,
-        values: [
-          formatNumber(row.clicks),
-          formatNumber(row.impressions),
-          percent(row.ctr),
-          position(row.position),
-        ],
-      }))}
-    />
-  )
-}
 
 export default async function SearchConsolePage({
   searchParams,
@@ -46,25 +18,22 @@ export default async function SearchConsolePage({
   const user = await requireUser()
   const search = await searchParams
   const range = rangeParam(search.range)
+  // Each site used to open below the table as `?site=`. Old links land on its own page.
+  const legacy = one(search.site)
+  if (legacy) redirect(`/dashboard/search-console/${encodeURIComponent(legacy)}?range=${range}`)
   const projects = await cachedProjects(user.id)
   const data = await loadSearchConsole(projects, GOOGLE_RANGES[range])
   const sites = [...(data?.sites ?? [])].sort((a, b) => b.totals.clicks - a.totals.clicks)
-  const selected = sites.find((s) => s.site.host === one(search.site)) ?? sites[0]
   const ok = sites.filter((s) => !s.error)
   const clicks = ok.reduce((n, s) => n + s.totals.clicks, 0)
   const impressions = ok.reduce((n, s) => n + s.totals.impressions, 0)
-  const href = (params: { range?: string; site?: string }) => {
-    const query = new URLSearchParams({ range, ...(selected ? { site: selected.site.host } : {}) })
-    for (const [key, value] of Object.entries(params)) if (value) query.set(key, value)
-    return `/dashboard/search-console?${query}`
-  }
 
   return (
     <Shell user={user}>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-xl font-semibold tracking-tight">Google Search Console</h1>
         {data && sites.length > 0 ? (
-          <RangeNav range={range} href={(id) => href({ range: id })} />
+          <RangeNav range={range} href={(id) => `/dashboard/search-console?range=${id}`} />
         ) : null}
       </div>
 
@@ -119,15 +88,11 @@ export default async function SearchConsolePage({
               </thead>
               <tbody>
                 {sites.map(({ site, totals, daily, error }) => (
-                  <tr
-                    key={site.siteUrl}
-                    className={`border-t border-line ${site === selected?.site ? 'bg-surface' : ''}`}
-                  >
+                  <tr key={site.siteUrl} className="border-t border-line">
                     <td className="py-1.5 pr-4 pl-1">
                       <Link
-                        href={href({ site: site.host })}
+                        href={`/dashboard/search-console/${site.host}?range=${range}`}
                         className="font-medium hover:underline"
-                        aria-current={site === selected?.site ? 'true' : undefined}
                       >
                         {site.host}
                       </Link>
@@ -160,38 +125,6 @@ export default async function SearchConsolePage({
               </tbody>
             </table>
           </div>
-
-          {selected && !selected.error ? (
-            <section aria-labelledby="site-heading">
-              <h2 id="site-heading" className="mb-2 text-base font-semibold tracking-tight">
-                {selected.site.host}
-              </h2>
-              <TimeSeriesChart
-                metric="Clicks"
-                points={selected.daily.map((d) => ({
-                  label: shortDay(d.day),
-                  title: shortDay(d.day),
-                  value: d.clicks,
-                }))}
-              />
-              <div className="mt-6 grid gap-x-8 gap-y-6 lg:grid-cols-2">
-                <div className="min-w-0 overflow-x-auto">
-                  <h3 className="mb-2 text-sm font-medium">Top queries</h3>
-                  <RowsTable rows={selected.queries} keyLabel="Query" />
-                </div>
-                <div className="min-w-0 overflow-x-auto">
-                  <h3 className="mb-2 text-sm font-medium">Top pages</h3>
-                  <RowsTable
-                    rows={selected.pages.map((p) => ({
-                      ...p,
-                      key: p.key.replace(/^https?:\/\/[^/]+/, '') || '/',
-                    }))}
-                    keyLabel="Page"
-                  />
-                </div>
-              </div>
-            </section>
-          ) : null}
         </>
       )}
     </Shell>

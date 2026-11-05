@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { daysBetween, isGoogleRangeId, searchWindow } from '../src/features/google/ranges'
-import { matchSites, propertyHost } from '../src/features/search-console/sites'
+import { matchSites, propertyHost, siteFor } from '../src/features/search-console/sites'
 
 const projects = [
   { name: 'Quick', domains: ['quickbankconvert.com'] },
@@ -54,5 +54,25 @@ describe('dates', () => {
   it('accepts only known ranges', () => {
     expect(isGoogleRangeId('28d')).toBe(true)
     expect(isGoogleRangeId('toString')).toBe(false)
+  })
+})
+
+describe('siteFor', () => {
+  const sites = [
+    { site: { siteUrl: 'sc-domain:acme.test', host: 'acme.test', projectName: 'Shop' } },
+    { site: { siteUrl: 'https://blog.test/', host: 'blog.test', projectName: 'Blog' } },
+  ]
+
+  it('finds a site by its host', () => {
+    expect(siteFor(sites, 'blog.test')).toBe(sites[1])
+  })
+
+  it('finds the domain property that covers a subdomain', () => {
+    expect(siteFor(sites, 'shop.acme.test')).toBe(sites[0])
+  })
+
+  it('does not stretch a URL-prefix property over a subdomain', () => {
+    expect(siteFor(sites, 'www2.blog.test')).toBeUndefined()
+    expect(siteFor(sites, 'other.test')).toBeUndefined()
   })
 })
