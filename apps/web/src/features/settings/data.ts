@@ -3,7 +3,7 @@ import { schema } from '@copper/db'
 import { eq } from 'drizzle-orm'
 import { db } from '@/lib/db'
 import { env } from '@/lib/env'
-import { type DomainList, fetchNamecheapDomains } from './namecheap'
+import { type DomainList, fetchNamecheapDomains, maskKey } from './namecheap'
 import { unseal } from './secret-box'
 
 const { account, namecheapCredential } = schema
@@ -17,18 +17,22 @@ export async function signInMethods(userId: string): Promise<string[]> {
   return rows.map((r) => r.provider).sort()
 }
 
-/** What the settings page may show about the stored key. Never the key itself. */
+/** What the settings page may show about the stored key: a masked copy, never the key itself. */
 export async function namecheapSummary(userId: string) {
   const [row] = await db()
-    .select({
-      apiUser: namecheapCredential.apiUser,
-      last4: namecheapCredential.apiKeyLast4,
-      updatedAt: namecheapCredential.updatedAt,
-    })
+    .select()
     .from(namecheapCredential)
     .where(eq(namecheapCredential.userId, userId))
     .limit(1)
-  return row ?? null
+  if (!row) return null
+  let masked: string
+  try {
+    masked = maskKey(unseal(row.apiKeyEncrypted, env().BETTER_AUTH_SECRET))
+  } catch {
+    // Sealed under another secret. The last four characters are stored in the clear for this.
+    masked = `${'•'.repeat(12)}${row.apiKeyLast4}`
+  }
+  return { apiUser: row.apiUser, masked, updatedAt: row.updatedAt }
 }
 
 /**

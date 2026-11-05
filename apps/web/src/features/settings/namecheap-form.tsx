@@ -31,7 +31,7 @@ export function NamecheapForm({
       <Field
         htmlFor="nc-key"
         label="API key"
-        hint="Namecheap: Profile, Tools, Business & Dev Tools, API Access. Stored encrypted and never shown again."
+        hint="Namecheap: Profile, Tools, Business & Dev Tools, API Access. Stored encrypted; only its first and last four characters are shown."
       >
         <input
           id="nc-key"
