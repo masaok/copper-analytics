@@ -78,6 +78,7 @@ export function SidebarNav({
           <NavLink href="/dashboard/google-analytics" label="Google Analytics" path={path} nested />
         </>
       ) : null}
+      <NavLink href="/dashboard/domains" label="Domains" path={path} />
       <div className="my-2 border-t border-line" />
       <NavLink href="/dashboard/settings" label="Settings" path={path} nested />
       <NavLink href="/dashboard/docs" label="Docs" path={path} />
