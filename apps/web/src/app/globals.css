@@ -2,34 +2,31 @@
 /* The shared components live outside this app, so name their folder for class detection. */
 @source "../../../../packages/ui/src";
 
-/* Copper the metal, and the verdigris it weathers to. Everything else stays neutral. */
+/*
+ * Copper the metal, and the verdigris it weathers to. Everything else stays neutral.
+ * Each token is light-dark(light, dark). The system picks unless the theme toggle set data-theme.
+ */
 :root {
-  --bg: #ffffff;
-  --surface: #f5f7f6;
-  --ink: #1a2321;
-  --muted: #5d6966;
-  --line: #dfe4e2;
-  --copper: #a8521f;
-  --copper-soft: #f6e9df;
+  color-scheme: light dark;
+  --bg: light-dark(#ffffff, #0f1413);
+  --surface: light-dark(#f5f7f6, #171e1c);
+  --ink: light-dark(#1a2321, #e7ecea);
+  --muted: light-dark(#5d6966, #94a09c);
+  --line: light-dark(#dfe4e2, #27312e);
+  --copper: light-dark(#a8521f, #e39258);
+  --copper-soft: light-dark(#f6e9df, #2c1e14);
   /* The data color. Checked against both surfaces with the dataviz palette validator. */
-  --chart: #a8521f;
-  --patina: #1f7462;
-  --danger: #a3261f;
+  --chart: light-dark(#a8521f, #c87a42);
+  --patina: light-dark(#1f7462, #5fbda6);
+  --danger: light-dark(#a3261f, #ef8a80);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #0f1413;
-    --surface: #171e1c;
-    --ink: #e7ecea;
-    --muted: #94a09c;
-    --line: #27312e;
-    --copper: #e39258;
-    --copper-soft: #2c1e14;
-    --chart: #c87a42;
-    --patina: #5fbda6;
-    --danger: #ef8a80;
-  }
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 @theme inline {

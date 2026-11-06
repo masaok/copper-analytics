@@ -4,6 +4,7 @@ import type { SessionUser } from '@/lib/auth'
 import { env } from '@/lib/env'
 import { SidebarNav } from './sidebar-nav'
 import { SignOutButton } from './sign-out'
+import { ThemeToggle } from './theme-toggle'
 import { Wordmark } from './ui'
 
 /**
@@ -42,7 +43,8 @@ export async function Shell({
           <Link href="/dashboard" aria-label="Copper Analytics home">
             <Wordmark />
           </Link>
-          <span className="md:hidden">
+          <span className="flex items-center gap-3 md:hidden">
+            <ThemeToggle />
             <SignOutButton />
           </span>
         </div>
@@ -61,6 +63,9 @@ export async function Shell({
             <div className="truncate text-xs text-muted">{user.email}</div>
           </div>
           <SignOutButton />
+        </div>
+        <div className="px-3 pb-2.5 max-md:hidden">
+          <ThemeToggle />
         </div>
       </aside>
       <main className="min-w-0 flex-1 md:overflow-y-auto">

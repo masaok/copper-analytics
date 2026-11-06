@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Geist_Mono, Instrument_Sans } from 'next/font/google'
+import { themeScript } from '@/lib/theme'
 import './globals.css'
 
 const instrument = Instrument_Sans({ variable: '--font-instrument', subsets: ['latin'] })
@@ -12,7 +13,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="en" className={`${instrument.variable} ${geistMono.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      className={`${instrument.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
+      <head>
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: a fixed script that applies the stored theme before paint */}
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
   )
